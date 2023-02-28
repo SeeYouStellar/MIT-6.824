@@ -11,7 +11,7 @@ import "hash/fnv"
 //
 type KeyValue struct {
 	Key   string
-	Value string
+	Value string 
 }
 
 //
@@ -35,7 +35,8 @@ func Worker(mapf func(string, string) []KeyValue,
 
 	// uncomment to send the Example RPC to the coordinator.
 	// CallExample()
-
+	CallGetMapTask()
+	CallGetReduceTask()
 }
 
 //
@@ -66,7 +67,45 @@ func CallExample() {
 		fmt.Printf("call failed!\n")
 	}
 }
+//my implement
+func CallGetMapTask() {
 
+	// declare an argument structure.
+	args := TaskRequest{}
+
+	// declare a reply structure.
+	reply := MapTaskResponse{}
+
+	// send the RPC request, wait for the reply.
+	// the "Coordinator.Example" tells the
+	// receiving server that we'd like to call
+	// the Example() method of struct Coordinator.
+	ok := call("Coordinator.GetMapTask", &args, &reply)
+	if ok {
+		fmt.Printf("reply.Name %s\n", reply.Name)
+	} else {
+		fmt.Printf("call failed!\n")
+	}
+}
+func CallGetReduceTask() {
+
+	// declare an argument structure.
+	args := TaskRequest{}
+
+	// declare a reply structure.
+	reply := ReduceTaskResponse{}
+
+	// send the RPC request, wait for the reply.
+	// the "Coordinator.Example" tells the
+	// receiving server that we'd like to call
+	// the Example() method of struct Coordinator.
+	ok := call("Coordinator.GetReduceTask", &args, &reply)
+	if ok {
+		fmt.Printf("reply.Name %s\n", reply.Name)
+	} else {
+		fmt.Printf("call failed!\n")
+	}
+}
 //
 // send an RPC request to the coordinator, wait for the response.
 // usually returns true.

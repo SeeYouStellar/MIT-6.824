@@ -46,8 +46,8 @@ func main() {
 			log.Fatalf("cannot read %v", filename)
 		}
 		file.Close()
-		kva := mapf(filename, string(content))
-		intermediate = append(intermediate, kva...)
+		kva := mapf(filename, string(content))  // (k1,v1)->mapf->list(k2,v2)
+		intermediate = append(intermediate, kva...)  //... indicates append a slice immediately
 	}
 
 	//
@@ -75,7 +75,7 @@ func main() {
 		for k := i; k < j; k++ {
 			values = append(values, intermediate[k].Value)
 		}
-		output := reducef(intermediate[i].Key, values)
+		output := reducef(intermediate[i].Key, values)    // per list(k2,v2)->per reducef->(k2,list(v2))
 
 		// this is the correct format for each line of Reduce output.
 		fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, output)
@@ -99,7 +99,7 @@ func loadPlugin(filename string) (func(string, string) []mr.KeyValue, func(strin
 	if err != nil {
 		log.Fatalf("cannot find Map in %v", filename)
 	}
-	mapf := xmapf.(func(string, string) []mr.KeyValue)
+	mapf := xmapf.(func(string, string) []mr.KeyValue)   // get variable mapf
 	xreducef, err := p.Lookup("Reduce")
 	if err != nil {
 		log.Fatalf("cannot find Reduce in %v", filename)
