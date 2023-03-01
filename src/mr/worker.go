@@ -34,7 +34,7 @@ func Worker(mapf func(string, string) []KeyValue,
 	// Your worker implementation here.
 	// uncomment to send the Example RPC to the coordinator.
 	// CallExample()
-	CallGetMapTask()
+	CallGetTask()
 
 	// CallMapTaskDone()
 
@@ -48,7 +48,7 @@ func Worker(mapf func(string, string) []KeyValue,
 
 
 //my implement
-func CallGetMapTask() {
+func CallGetTask() {
 
 	// declare an argument structure.
 	args := TaskRequest{}
@@ -60,9 +60,9 @@ func CallGetMapTask() {
 	// the "Coordinator.Example" tells the
 	// receiving server that we'd like to call
 	// the Example() method of struct Coordinator.
-	ok := call("Coordinator.GetMapTask", &args, &reply)
+	ok := call("Coordinator.GetTask", &args, &reply)
 	if ok {
-		fmt.Printf("reply.FilePath %s\n", reply.FilePath)
+		fmt.Printf("reply.FilePath %s reply.Name %d\n", reply.FilePath, reply.Name)
 	} else {
 		fmt.Printf("call failed!\n")
 	}

@@ -18,6 +18,7 @@ type Coordinator struct {
 	ReduceWorkerNum int
 	MapTaskNum      int
 	ReduceTaskNum   int
+	state 			int // 0--start 1--map 2--reduce 
 }
 
 type Task struct {
@@ -27,11 +28,17 @@ type Task struct {
 
 // Your code here -- RPC handlers for the worker to call.
 
-func (c *Coordinator) GetMapTask(args *TaskRequest, reply *TaskResponse) error {
-	maptask, ok:= <-c.MapTask
-	if ok {
-		reply.FilePath = maptask.FilePath
+func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
+	if c.state == 0 {
+		maptask, ok:= <-c.MapTask
+		if ok {
+			reply.Name = maptask.Name
+			reply.FilePath = maptask.FilePath
+		}
+	} else if c.state == 1 {
+		// all maptask finished
 	}
+	
 	return nil
 }
 
@@ -78,6 +85,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 		ReduceWorkerNum:nReduce,
 		MapTaskNum:len(files),
 		ReduceTaskNum:nReduce,
+		state:0,
 	}
 
 	// Your code here.
