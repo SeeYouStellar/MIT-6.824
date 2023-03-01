@@ -40,7 +40,9 @@ func ihash(key string) int {
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 
-
+	// 1. worker should ask for task continuously(although worker has done a task) until all maptask has done 
+	// 2. then worker ask for a reduce task continuously like above
+	// worker use CallGetTask reply variable to get mr state
 	for {
 		args := TaskRequest{}
 		reply := TaskResponse{}
