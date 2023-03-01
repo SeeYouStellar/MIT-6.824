@@ -1,17 +1,18 @@
 package mr
 
-import "fmt"
-import "log"
-import "net/rpc"
-import "hash/fnv"
-
+import (
+	"fmt"
+	"hash/fnv"
+	"log"
+	"net/rpc"
+)
 
 //
 // Map functions return a slice of KeyValue.
 //
 type KeyValue struct {
 	Key   string
-	Value string 
+	Value string
 }
 
 //
@@ -24,7 +25,6 @@ func ihash(key string) int {
 	return int(h.Sum32() & 0x7fffffff)
 }
 
-
 //
 // main/mrworker.go calls this function.
 //
@@ -32,11 +32,12 @@ func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 
 	// Your worker implementation here.
-
 	// uncomment to send the Example RPC to the coordinator.
 	// CallExample()
 	CallGetMapTask()
-	CallGetReduceTask()
+
+	// CallMapTaskDone()
+
 }
 
 //
@@ -44,29 +45,8 @@ func Worker(mapf func(string, string) []KeyValue,
 //
 // the RPC argument and reply types are defined in rpc.go.
 //
-func CallExample() {
 
-	// declare an argument structure.
-	args := ExampleArgs{}
 
-	// fill in the argument(s).
-	args.X = 99
-
-	// declare a reply structure.
-	reply := ExampleReply{}
-
-	// send the RPC request, wait for the reply.
-	// the "Coordinator.Example" tells the
-	// receiving server that we'd like to call
-	// the Example() method of struct Coordinator.
-	ok := call("Coordinator.Example", &args, &reply)
-	if ok {
-		// reply.Y should be 100.
-		fmt.Printf("reply.Y %v\n", reply.Y)
-	} else {
-		fmt.Printf("call failed!\n")
-	}
-}
 //my implement
 func CallGetMapTask() {
 
@@ -74,7 +54,7 @@ func CallGetMapTask() {
 	args := TaskRequest{}
 
 	// declare a reply structure.
-	reply := MapTaskResponse{}
+	reply := TaskResponse{}
 
 	// send the RPC request, wait for the reply.
 	// the "Coordinator.Example" tells the
@@ -82,30 +62,26 @@ func CallGetMapTask() {
 	// the Example() method of struct Coordinator.
 	ok := call("Coordinator.GetMapTask", &args, &reply)
 	if ok {
-		fmt.Printf("reply.Name %s\n", reply.Name)
+		fmt.Printf("reply.FilePath %s\n", reply.FilePath)
 	} else {
 		fmt.Printf("call failed!\n")
 	}
+
+	// file, err := os.Open(reply.FilePath)
+	// if err != nil {
+	// 	log.Fatalf("cannot open %v", reply.FilePath)
+	// }
+	// content, err := ioutil.ReadAll(file)
+	// if err != nil {
+	// 	log.Fatalf("cannot read %v", reply.FilePath)
+	// }
+	// file.Close()
+	// intermediate := mapf(reply.FilePath, string(content)) // (k1,v1)->mapf->list(k2,v2)
+
+	// oname := "mr-out-0"
+	// ofile, _ := os.Create(oname)
 }
-func CallGetReduceTask() {
 
-	// declare an argument structure.
-	args := TaskRequest{}
-
-	// declare a reply structure.
-	reply := ReduceTaskResponse{}
-
-	// send the RPC request, wait for the reply.
-	// the "Coordinator.Example" tells the
-	// receiving server that we'd like to call
-	// the Example() method of struct Coordinator.
-	ok := call("Coordinator.GetReduceTask", &args, &reply)
-	if ok {
-		fmt.Printf("reply.Name %s\n", reply.Name)
-	} else {
-		fmt.Printf("call failed!\n")
-	}
-}
 //
 // send an RPC request to the coordinator, wait for the response.
 // usually returns true.

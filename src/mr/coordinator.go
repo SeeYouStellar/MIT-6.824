@@ -1,65 +1,40 @@
 package mr
 
-import "log"
-import "net"
-import "os"
-import "net/rpc"
-import "net/http"
-
-
+import (
+	"log"
+	"net"
+	"net/http"
+	"net/rpc"
+	"os"
+)
 
 type Coordinator struct {
 	// Your definitions here.
-	MapTasks chan MapTask
-	ReduceTasks chan ReduceTask
-	MapWorkerNum int
+	MapTask         chan Task
+	ReduceTask      chan Task
+	MapTaskDone     chan bool
+	ReduceTaskDone  chan bool
+	MapWorkerNum    int
 	ReduceWorkerNum int
-	MapTasksDone chan MapTask
-	ReduceTasksDone chan ReduceTask
+	MapTaskNum      int
+	ReduceTaskNum   int
 }
 
-type MapTask struct {
+type Task struct {
+	Name     int
 	FilePath string
 }
-type ReduceTask struct {
-	FilePaths []string
-}
+
 // Your code here -- RPC handlers for the worker to call.
 
-//
-// an example RPC handler.
-//
-// the RPC argument and reply types are defined in rpc.go.
-//
-func (c *Coordinator) Example(args *ExampleArgs, reply *ExampleReply) error {
-	reply.Y = args.X + 1
+func (c *Coordinator) GetMapTask(args *TaskRequest, reply *TaskResponse) error {
+	maptask, ok:= <-c.MapTask
+	if ok {
+		reply.FilePath = maptask.FilePath
+	}
 	return nil
 }
 
-// my implement
-func (c *Coordinator) GetMapTask(args *TaskRequest, reply *MapTaskResponse) error {
-	maptask := <-c.MapTasks
-	c.MapWorkerNum += 1
-
-	reply.FilePath = maptask.FilePath
-	return nil
-}
-func (c *Coordinator) GetReduceTask(args *TaskRequest, reply *ReduceTaskResponse) error {
-	reducetask = <-c.ReduceTasks
-	c.ReduceWorkerNum += 1
-	
-	reply.FilePaths = reducetask.FilePaths
-	return nil
-}
-
-func (c * Coordinator) MapTaskDone(args , reply *MapTaskDoneResponse) error {
-	
-	return nil
-}
-
-func (c * Coordinator) ReduceTaskDone(args , reply *ReduceTaskDoneResponse) error {
-	return nil
-}
 //
 // start a thread that listens for RPCs from worker.go
 //
@@ -85,7 +60,6 @@ func (c *Coordinator) Done() bool {
 
 	// Your code here.
 
-
 	return ret
 }
 
@@ -95,20 +69,29 @@ func (c *Coordinator) Done() bool {
 // nReduce is the number of reduce tasks to use.
 //
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
-	c := Coordinator{}
+	c := Coordinator{
+		MapTask:make(chan Task, len(files)),
+		ReduceTask:make(chan Task, nReduce),
+		MapTaskDone:make(chan bool, len(files)),
+		ReduceTaskDone:make(chan bool, nReduce),
+		MapWorkerNum:len(files)-1,
+		ReduceWorkerNum:nReduce,
+		MapTaskNum:len(files),
+		ReduceTaskNum:nReduce,
+	}
 
 	// Your code here.
 	// assign maptask
-	for _,filepath := range files {
-		c.MapTasks <- MapTask{filepath}
+	for i, filepath := range files {
+		c.MapTask <- Task{Name: i, FilePath: filepath}
 	}
 	c.server()
 	// Judge if or not all maptasks are done
 
 	// assign reducetask
-	for i:=0;i<nReduce;i++ {
+	// for i := 0; i < nReduce; i++ {
 
-		c.ReduceTasks <- ReduceTask{}
-	}
+	// 	c.ReduceTasks <- ReduceTask{}
+	// }
 	return &c
 }
