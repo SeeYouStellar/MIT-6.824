@@ -18,8 +18,9 @@ type TaskRequest struct {
 }
 
 type TaskResponse struct {
-	Name     int
-	FilePath string
+	Number		int
+	FilePath	string
+	NReduce		int
 }
 
 // Cook up a unique-ish UNIX-domain socket name

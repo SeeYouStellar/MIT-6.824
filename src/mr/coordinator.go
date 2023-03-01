@@ -22,7 +22,7 @@ type Coordinator struct {
 }
 
 type Task struct {
-	Name     int
+	Number     int
 	FilePath string
 }
 
@@ -32,8 +32,9 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 	if c.state == 0 {
 		maptask, ok:= <-c.MapTask
 		if ok {
-			reply.Name = maptask.Name
+			reply.Number = maptask.Number
 			reply.FilePath = maptask.FilePath
+			reply.NReduce = c.ReduceTaskNum
 		}
 	} else if c.state == 1 {
 		// all maptask finished
@@ -91,7 +92,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	// Your code here.
 	// assign maptask
 	for i, filepath := range files {
-		c.MapTask <- Task{Name: i, FilePath: filepath}
+		c.MapTask <- Task{Number: i, FilePath: filepath}
 	}
 	c.server()
 	// Judge if or not all maptasks are done

@@ -5,6 +5,10 @@ import (
 	"hash/fnv"
 	"log"
 	"net/rpc"
+	"sort"
+	"os"
+	"io/ioutil"
+	"strconv"
 )
 
 //
@@ -14,7 +18,12 @@ type KeyValue struct {
 	Key   string
 	Value string
 }
+type ByKey []KeyValue
 
+// for sorting by key.
+func (a ByKey) Len() int           { return len(a) }
+func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 //
 // use ihash(key) % NReduce to choose the reduce
 // task number for each KeyValue emitted by Map.
@@ -31,13 +40,47 @@ func ihash(key string) int {
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 
-	// Your worker implementation here.
-	// uncomment to send the Example RPC to the coordinator.
-	// CallExample()
-	CallGetTask()
 
-	// CallMapTaskDone()
+	for {
+		args := TaskRequest{}
+		reply := TaskResponse{}
+		ok := CallGetTask(&args, &reply)
+		if ok {
+			filepath := reply.FilePath
+			maptasknumber := reply.Number
+			nreduce := reply.NReduce
+			file, err := os.Open(filepath)
+			if err != nil {
+				log.Fatalf("cannot open %v", filepath)
+			}
+			content, err := ioutil.ReadAll(file)
+			if err != nil {
+				log.Fatalf("cannot read %v", filepath)
+			}
+			file.Close()
+			intermediate := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
 
+			sort.Sort(ByKey(intermediate))
+			
+			i := 0
+			// store the intermediate data into mr-X-Y
+			
+			for i < len(intermediate) {
+				j := i + 1
+				reducetasknumber := ihash(intermediate[i].Key) % nreduce
+				oname := "mr-"+strconv.Itoa(maptasknumber)+"-"+strconv.Itoa(reducetasknumber)
+				
+				ofile, _ := os.Create(oname)
+				for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
+					j++
+					fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, intermediate[j].Value)
+				}
+				ofile.Close()
+				i = j
+			}
+			break
+		}
+	}
 }
 
 //
@@ -46,40 +89,21 @@ func Worker(mapf func(string, string) []KeyValue,
 // the RPC argument and reply types are defined in rpc.go.
 //
 
-
-//my implement
-func CallGetTask() {
-
-	// declare an argument structure.
-	args := TaskRequest{}
-
-	// declare a reply structure.
-	reply := TaskResponse{}
+func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
 
 	// send the RPC request, wait for the reply.
 	// the "Coordinator.Example" tells the
 	// receiving server that we'd like to call
 	// the Example() method of struct Coordinator.
 	ok := call("Coordinator.GetTask", &args, &reply)
+	ret := true
 	if ok {
-		fmt.Printf("reply.FilePath %s reply.Name %d\n", reply.FilePath, reply.Name)
+		fmt.Printf("reply.FilePath:%s -- reply.Name:%d -- reply.NReduce:%d\n", reply.FilePath, reply.Number, reply.NReduce)
 	} else {
+		ret = false
 		fmt.Printf("call failed!\n")
 	}
-
-	// file, err := os.Open(reply.FilePath)
-	// if err != nil {
-	// 	log.Fatalf("cannot open %v", reply.FilePath)
-	// }
-	// content, err := ioutil.ReadAll(file)
-	// if err != nil {
-	// 	log.Fatalf("cannot read %v", reply.FilePath)
-	// }
-	// file.Close()
-	// intermediate := mapf(reply.FilePath, string(content)) // (k1,v1)->mapf->list(k2,v2)
-
-	// oname := "mr-out-0"
-	// ofile, _ := os.Create(oname)
+	return ret
 }
 
 //
@@ -88,7 +112,7 @@ func CallGetTask() {
 // returns false if something goes wrong.
 //
 func call(rpcname string, args interface{}, reply interface{}) bool {
-	// c, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")
+	// c, err := rpc.DialHTTP("tcp", "172.28.32.1"+":1234")
 	sockname := coordinatorSock()
 	c, err := rpc.DialHTTP("unix", sockname)
 	if err != nil {
