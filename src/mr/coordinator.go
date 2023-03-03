@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"time"
 )
 
 type Coordinator struct {
@@ -14,22 +15,22 @@ type Coordinator struct {
 	ReduceTask      chan Task
 	MapTaskDone     chan bool
 	ReduceTaskDone  chan bool
-	MapWorkerNum    int
-	ReduceWorkerNum int
 	MapTaskNum      int
 	ReduceTaskNum   int
 	state 			int // 0--start 1--map 2--reduce 
 }
 
 type Task struct {
-	Number     int
-	FilePath string
+	Number     		int
+	FilePath 		string
+	TimeBegin 		Time
 }
 
 // Your code here -- RPC handlers for the worker to call.
 
 func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 	if c.state == 0 {
+		// map task not finish
 		maptask, ok:= <-c.MapTask
 		if ok {
 			reply.Number = maptask.Number
@@ -39,11 +40,27 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 		}
 	} else if c.state == 1 {
 		// all maptask finished
+		reducetask, ok:= <-c.ReduceTask
+		if ok {
+
+		}
+	} else {
+		// mr finished 
+		// master notify all worker to die
+		reply.State = c.state
 	}
 	
 	return nil
 }
 
+func (c *Coordinator) TaskDone(args *DoneRequest, reply *DoneResponse) error {
+	if DoneRequest.Type == 0 {
+		c.MapTaskDone <- true
+	} else {
+		c.ReduceTaskDone <- true
+	}
+	return nil
+} 
 //
 // start a thread that listens for RPCs from worker.go
 //
@@ -83,8 +100,6 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 		ReduceTask:make(chan Task, nReduce),
 		MapTaskDone:make(chan bool, len(files)),
 		ReduceTaskDone:make(chan bool, nReduce),
-		MapWorkerNum:len(files)-1,
-		ReduceWorkerNum:nReduce,
 		MapTaskNum:len(files),
 		ReduceTaskNum:nReduce,
 		state:0,

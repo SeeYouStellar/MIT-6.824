@@ -13,9 +13,7 @@ import (
 
 // Add your RPC definitions here.
 
-type TaskRequest struct {
-	TaskType int //0--map 1--reduce
-}
+type TaskRequest struct {}
 
 type TaskResponse struct {
 	Number		int
@@ -23,6 +21,12 @@ type TaskResponse struct {
 	NReduce		int
 	State 		int
 }
+
+type DoneRequest struct {
+	Type 		int  // map--0 reduce--1
+}
+
+type DoneResponse struct {}
 
 // Cook up a unique-ish UNIX-domain socket name
 // in /var/tmp, for the coordinator.

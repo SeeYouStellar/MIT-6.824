@@ -9,6 +9,7 @@ import (
 	"os"
 	"io/ioutil"
 	"strconv"
+	"encoding/json"
 )
 
 //
@@ -50,10 +51,10 @@ func Worker(mapf func(string, string) []KeyValue,
 		ok := CallGetTask(&args, &reply)
 		// ok:if rpc call successfully or not
 		if ok {
-			if reply.State == 2 {
+			if reply.State == 1 {
 				// mr in reduce phase
-				
-			} else {
+
+			} else if reply.State == 0 {
 				// mr in map phase
 				filepath := reply.FilePath
 				maptasknumber := reply.Number
@@ -71,22 +72,35 @@ func Worker(mapf func(string, string) []KeyValue,
 
 				sort.Sort(ByKey(intermediate))
 				
-				i := 0
-				// store the intermediate data into mr-X-Y
-				
-				for i < len(intermediate) {
-					j := i + 1
-					reducetasknumber := ihash(intermediate[i].Key) % nreduce
-					oname := "mr-"+strconv.Itoa(maptasknumber)+"-"+strconv.Itoa(reducetasknumber)
-					
-					ofile, _ := os.Create(oname)
-					for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
-						j++
-						fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, intermediate[j].Value)
-					}
-					ofile.Close()
-					i = j
+				// use a buffer and write the buffer to file in nreduce times 
+				// instead of write one kv in one time 
+				buffer := make([][]KeyValue, nreduce)
+				for _, kv := range intermediate {
+					no := (ihash(kv.Key)) % nreduce
+					buffer[no].append(buffer[no], kv)
 				}
+				
+				// write the buffer into tmpFile then rename it to mr-X-Y
+				// X--mapnumber  Y--reducenumber
+				X := reply.Number
+				for Y, kva := range buffer {
+					MapOutFileName := "mr-"+strconv.Itoa(X)+"-"+strconv.Itoa(Y)
+					TmpFile, error := ioutil.TempFile("", "mr-map-*")
+					if error != nil {
+						log.Fatalf("cannot open TmpFile")
+					}
+					enc := json.NewEncoder(TmpFile)
+					err := enc.Encode(kva)
+					if err != nil {
+						//fmt.Printf("write wrong!\n")
+						log.Fatalf("write TmpFile wrong")
+					}
+					TmpFile.Close()
+					os.Rename(TmpFile.Name(), MapOutFileName)
+				}
+			} else {
+				// worker die
+				break
 			}
 
 		}
