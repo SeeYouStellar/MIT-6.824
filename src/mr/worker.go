@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"encoding/json"
+	"time"
 )
 
 //
@@ -53,12 +54,57 @@ func Worker(mapf func(string, string) []KeyValue,
 		if ok {
 			if reply.State == 1 {
 				// mr in reduce phase
-
+				
+				// get data from rpc service  
+				Y := reply.Number          // reduce task ID
+				nreduce := reply.NReduce   // number of reduce task and mroutfile
+				 
+				// decoder from mr-*-Y
+				kva := ByKey{}
+				for i:=0;i<nreduce;i++ {
+					intermediatefilepath := "mr-"+strconv.Itoa(i)+"-"+strconv.Itoa(Y)
+					dec := json.NewDecoder(intermediatefilepath)
+					for {
+						var kv KeyValue
+						if err := dec.Decode(&kv); err != nil {
+							break
+						}
+						kva = append(kva, kv)
+					}
+				}
+				
+				sort.Sort(ByKey(kva))
+				// accumulate every kv with the same key 
+				// one reduce task operate some key 
+				i := 0
+				oname := "mr-out-"+strconv.Itoa(Y)
+				ofile, _ := os.Create(oname)
+				for i < len(kva) {
+					j := i + 1
+					for j < len(kva) && kva[j].Key == kva[i].Key {
+						j++
+					}
+					values := []string{}
+					for k := i; k < j; k++ {
+						values = append(values, kva[k].Value)
+					}
+					output := reducef(kva[i].Key, values)    // per list(k2,v2)->per reducef->(k2,list(v2))
+			
+					// this is the correct format for each line of Reduce output.
+					fmt.Fprintf(ofile, "%v %v\n", kva[i].Key, output)
+			
+					i = j
+				}
+				ofile.Close()
 			} else if reply.State == 0 {
 				// mr in map phase
-				filepath := reply.FilePath
-				maptasknumber := reply.Number
-				nreduce := reply.NReduce
+				
+				// get data from rpc service  
+				filepath := reply.FilePath  // file need to use mapf
+				nreduce := reply.NReduce    // number of reduce task and mroutfile
+				X := reply.Number           // map task ID
+
+				// use mapf 
 				file, err := os.Open(filepath)
 				if err != nil {
 					log.Fatalf("cannot open %v", filepath)
@@ -68,29 +114,27 @@ func Worker(mapf func(string, string) []KeyValue,
 					log.Fatalf("cannot read %v", filepath)
 				}
 				file.Close()
-				intermediate := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
-
-				sort.Sort(ByKey(intermediate))
+				kva := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
 				
 				// use a buffer and write the buffer to file in nreduce times 
 				// instead of write one kv in one time 
 				buffer := make([][]KeyValue, nreduce)
-				for _, kv := range intermediate {
+				for _, kv := range kva {
 					no := (ihash(kv.Key)) % nreduce
 					buffer[no].append(buffer[no], kv)
 				}
 				
 				// write the buffer into tmpFile then rename it to mr-X-Y
 				// X--mapnumber  Y--reducenumber
-				X := reply.Number
-				for Y, kva := range buffer {
+				
+				for Y, kvWithKeyY := range buffer {
 					MapOutFileName := "mr-"+strconv.Itoa(X)+"-"+strconv.Itoa(Y)
 					TmpFile, error := ioutil.TempFile("", "mr-map-*")
 					if error != nil {
 						log.Fatalf("cannot open TmpFile")
 					}
 					enc := json.NewEncoder(TmpFile)
-					err := enc.Encode(kva)
+					err := enc.Encode(kvWithKeyY)
 					if err != nil {
 						//fmt.Printf("write wrong!\n")
 						log.Fatalf("write TmpFile wrong")
@@ -102,8 +146,8 @@ func Worker(mapf func(string, string) []KeyValue,
 				// worker die
 				break
 			}
-
 		}
+		time.Sleep()
 	}
 }
 
