@@ -35,6 +35,7 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 			reply.Number = maptask.Number
 			reply.FilePath = maptask.FilePath
 			reply.NReduce = c.ReduceTaskNum
+			reply.State = c.state
 		}
 	} else if c.state == 1 {
 		// all maptask finished

@@ -43,44 +43,52 @@ func Worker(mapf func(string, string) []KeyValue,
 	// 1. worker should ask for task continuously(although worker has done a task) until all maptask has done 
 	// 2. then worker ask for a reduce task continuously like above
 	// worker use CallGetTask reply variable to get mr state
+	
 	for {
 		args := TaskRequest{}
 		reply := TaskResponse{}
 		ok := CallGetTask(&args, &reply)
+		// ok:if rpc call successfully or not
 		if ok {
-			filepath := reply.FilePath
-			maptasknumber := reply.Number
-			nreduce := reply.NReduce
-			file, err := os.Open(filepath)
-			if err != nil {
-				log.Fatalf("cannot open %v", filepath)
-			}
-			content, err := ioutil.ReadAll(file)
-			if err != nil {
-				log.Fatalf("cannot read %v", filepath)
-			}
-			file.Close()
-			intermediate := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
-
-			sort.Sort(ByKey(intermediate))
-			
-			i := 0
-			// store the intermediate data into mr-X-Y
-			
-			for i < len(intermediate) {
-				j := i + 1
-				reducetasknumber := ihash(intermediate[i].Key) % nreduce
-				oname := "mr-"+strconv.Itoa(maptasknumber)+"-"+strconv.Itoa(reducetasknumber)
+			if reply.State == 2 {
+				// mr in reduce phase
 				
-				ofile, _ := os.Create(oname)
-				for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
-					j++
-					fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, intermediate[j].Value)
+			} else {
+				// mr in map phase
+				filepath := reply.FilePath
+				maptasknumber := reply.Number
+				nreduce := reply.NReduce
+				file, err := os.Open(filepath)
+				if err != nil {
+					log.Fatalf("cannot open %v", filepath)
 				}
-				ofile.Close()
-				i = j
+				content, err := ioutil.ReadAll(file)
+				if err != nil {
+					log.Fatalf("cannot read %v", filepath)
+				}
+				file.Close()
+				intermediate := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
+
+				sort.Sort(ByKey(intermediate))
+				
+				i := 0
+				// store the intermediate data into mr-X-Y
+				
+				for i < len(intermediate) {
+					j := i + 1
+					reducetasknumber := ihash(intermediate[i].Key) % nreduce
+					oname := "mr-"+strconv.Itoa(maptasknumber)+"-"+strconv.Itoa(reducetasknumber)
+					
+					ofile, _ := os.Create(oname)
+					for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
+						j++
+						fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, intermediate[j].Value)
+					}
+					ofile.Close()
+					i = j
+				}
 			}
-			break
+
 		}
 	}
 }

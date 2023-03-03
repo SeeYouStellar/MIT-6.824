@@ -21,6 +21,7 @@ type TaskResponse struct {
 	Number		int
 	FilePath	string
 	NReduce		int
+	State 		int
 }
 
 // Cook up a unique-ish UNIX-domain socket name
