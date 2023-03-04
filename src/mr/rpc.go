@@ -20,7 +20,8 @@ type TaskRequest struct {
 type TaskResponse struct {
 	TaskNumber		int
 	FilePath		string
-	NReduce			int
+	MapTaskNum		int  
+	ReduceTaskNum	int
 	State 			int  // map--0 reduce--1 
 }
 

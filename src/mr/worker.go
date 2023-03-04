@@ -56,26 +56,26 @@ func Worker(mapf func(string, string) []KeyValue,
 				
 				// get data from rpc service  
 				Y := reply.TaskNumber          // reduce task ID
-				nreduce := reply.NReduce   // number of reduce task and mroutfile
-				 
+				// nreduce := reply.ReduceTaskNum   // number of reduce task and mroutfile
+				nmap := reply.MapTaskNum
 				// decoder from mr-*-Y
-				kva := ByKey{}
-				for i:=0;i<nreduce;i++ {
+				kva := []KeyValue{}
+				for i:=0;i<nmap;i++ {
 					intermediatefilepath := "mr-"+strconv.Itoa(i)+"-"+strconv.Itoa(Y)
 					intermediatefile, err := os.OpenFile(intermediatefilepath, os.O_RDONLY, 0777)
 					if err != nil {
 						log.Fatalf("cannot open reduceTask %v", intermediatefilepath)
+						continue
 					}
 					dec := json.NewDecoder(intermediatefile)
 					for {
-						var kv KeyValue
+						var kv []KeyValue    //official docs has trouble in this line
 						if err := dec.Decode(&kv); err != nil {
 							break
 						}
-						kva = append(kva, kv)
+						kva = append(kva, kv...)  // ... indicate add new slice
 					}
 				}
-				
 				sort.Sort(ByKey(kva))
 				// accumulate every kv with the same key 
 				// one reduce task operate some key 
@@ -104,7 +104,7 @@ func Worker(mapf func(string, string) []KeyValue,
 				
 				// get data from rpc service  
 				filepath := reply.FilePath  // file need to use mapf
-				nreduce := reply.NReduce    // number of reduce task and mroutfile
+				nreduce := reply.ReduceTaskNum    // number of reduce task and mroutfile
 				X := reply.TaskNumber           // map task ID
 
 				// use mapf 
@@ -137,18 +137,21 @@ func Worker(mapf func(string, string) []KeyValue,
 					TmpFile, error := ioutil.TempFile("", "mr-map-*")
 					if error != nil {
 						log.Fatalf("cannot open TmpFile")
+						continue
 					}
 					enc := json.NewEncoder(TmpFile)
 					err := enc.Encode(kvWithKeyY)
 					if err != nil {
 						//fmt.Printf("write wrong!\n")
 						log.Fatalf("write TmpFile wrong")
+						continue
 					}
 					TmpFile.Close()
 					os.Rename(TmpFile.Name(), MapOutFileName)
 				}
 			} else {
 				// worker die
+				// all reduce task have done 
 				break
 			}
 			// notify master the task has been done
@@ -161,7 +164,7 @@ func Worker(mapf func(string, string) []KeyValue,
 				}
 			}
 		}				
-		time.Sleep(10)
+		time.Sleep(time.Second)
 	} 
 }
 
@@ -179,7 +182,7 @@ func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
 	ok := call("Coordinator.GetTask", &args, &reply)
 	ret := true
 	if ok {
-		fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d\n", reply.FilePath, reply.TaskNumber)
+		fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d;State:%d\n", reply.FilePath, reply.TaskNumber, reply.State)
 	} else {
 		ret = false
 		fmt.Printf("CallGetTask failed!\n")

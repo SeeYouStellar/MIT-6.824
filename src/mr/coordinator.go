@@ -37,10 +37,9 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 			if maptask.State == 0 {
 				reply.TaskNumber = i
 				reply.FilePath = maptask.FilePath
-				reply.NReduce = c.ReduceTaskNum
+				reply.ReduceTaskNum = c.ReduceTaskNum
 				reply.State = c.State
 				maptask.State = 1
-				maptask.MachineID = args.MachineID
 				break
 			} 
 		}
@@ -49,10 +48,10 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 		for i, reducetask := range c.ReduceTask {
 			if reducetask.State == 0 {
 				reply.TaskNumber = i
-				reply.NReduce = c.ReduceTaskNum
+				reply.ReduceTaskNum = c.ReduceTaskNum
 				reply.State = c.State
+				reply.MapTaskNum = c.MapTaskNum
 				reducetask.State = 1
-				reduceTask.MachineID = args.MachineID
 				break
 			} 
 		}
@@ -98,10 +97,13 @@ func (c *Coordinator) server() {
 // if the entire job has finished.
 //
 func (c *Coordinator) Done() bool {
-	ret := true
-
+	ret := false
 	// Your code here.
-
+	c.Mu.Lock()
+	if c.State == 2 {
+		ret = true
+	}
+	c.Mu.Unlock()
 	return ret
 }
 
@@ -125,11 +127,20 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	for i, filepath := range files {
 		c.MapTask[i] = &Task{FilePath:filepath, RunningTime:0, State:0}
 	}
+	// assign reducetask
+	for i := 0; i < nReduce; i++ {
+		c.ReduceTask[i] = &Task{RunningTime:0, State:0}
+	}
+
 	c.server()
 
 	// Judge if or not all maptasks are done
 	for {
 		c.Mu.Lock()
+		if c.State == 2 {
+			c.Mu.Unlock()
+			break
+		}
 		i := 0
 		for ;i<len(files);i++ {
 			if c.MapTask[i].State == 1 {
@@ -145,16 +156,26 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 		}
 		if i == len(files) {
 			c.State = 1
-			c.Mu.Unlock()
-			break
+		}
+		i = 0
+		for ;i<len(files);i++ {
+			if c.ReduceTask[i].State == 1 {
+				c.ReduceTask[i].RunningTime = c.ReduceTask[i].RunningTime+1
+				if c.ReduceTask[i].RunningTime >= 10 {
+					c.ReduceTask[i].State = 0
+					c.ReduceTask[i].RunningTime = 0
+				}
+				break
+			} else if c.ReduceTask[i].State == 0 {
+				break
+			}
+		}
+		if i == nReduce {
+			c.State = 2
 		}
 		c.Mu.Unlock()
 		time.Sleep(time.Second)
 	}
-	// assign reducetask
-	// for i := 0; i < nReduce; i++ {
 
-	// 	c.ReduceTasks <- ReduceTask{}
-	// }
 	return &c
 }
