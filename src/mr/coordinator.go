@@ -6,58 +6,74 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"sync"
+	"time"
 )
 
 type Coordinator struct {
 	// Your definitions here.
-	MapTask         chan Task
-	ReduceTask      chan Task
+	MapTask			map[int]*Task
+	ReduceTask 		map[int]*Task
 	MapTaskNum      int
 	ReduceTaskNum   int
-	state 			int // 0--start 1--map 2--reduce 
+	State 			int // 0--start 1--all map done 2--all reduce done 
+	Mu 				sync.Mutex
 }
 
 type Task struct {
-	Number     		int // tasknumer
 	FilePath 		string 
-	RunningTime 		int // running time from worker get the task 
+	RunningTime 	int // running time from worker get the task 
+	State			int // 0--undo 1--in progress 2--done
+	// MachineID		int // the same worker write at the same local file when do different task 
 }
 
 // Your code here -- RPC handlers for the worker to call.
 
 func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
-	if c.state == 0 {
+	c.Mu.Lock()
+	if c.State == 0 {
 		// map task not finish
-		maptask, ok:= <-c.MapTask
-		if ok {
-			reply.Number = maptask.Number
-			reply.FilePath = maptask.FilePath
-			reply.NReduce = c.ReduceTaskNum
-			reply.State = c.state
+		for i, maptask := range c.MapTask {
+			if maptask.State == 0 {
+				reply.TaskNumber = i
+				reply.FilePath = maptask.FilePath
+				reply.NReduce = c.ReduceTaskNum
+				reply.State = c.State
+				maptask.State = 1
+				maptask.MachineID = args.MachineID
+				break
+			} 
 		}
-	} else if c.state == 1 {
+	} else if c.State == 1 {
 		// all maptask finished
-		reducetask, ok:= <-c.ReduceTask
-		if ok {
-			reply.Number = ReduceTask.Number
-			reply.NReduce = c.ReduceTaskNum
-			reply.State = c.state
+		for i, reducetask := range c.ReduceTask {
+			if reducetask.State == 0 {
+				reply.TaskNumber = i
+				reply.NReduce = c.ReduceTaskNum
+				reply.State = c.State
+				reducetask.State = 1
+				reduceTask.MachineID = args.MachineID
+				break
+			} 
 		}
 	} else {
 		// mr finished 
 		// master notify all worker to die
-		reply.State = c.state
+		reply.State = c.State
 	}
-	
+	c.Mu.Unlock()
 	return nil
 }
 
 func (c *Coordinator) TaskDone(args *DoneRequest, reply *DoneResponse) error {
-	if DoneRequest.Type == 0 {
-		c.MapTaskDone <- true
-	} else {
-		c.ReduceTaskDone <- true
+	c.Mu.Lock()
+	no := args.TaskNumber
+	if args.Type == 0 {
+		c.MapTask[no].State = 2
+	} else if args.Type == 1 {
+		c.ReduceTask[no].State = 2
 	}
+	c.Mu.Unlock()
 	return nil
 } 
 
@@ -96,22 +112,45 @@ func (c *Coordinator) Done() bool {
 //
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	c := Coordinator{
-		MapTask:make(chan Task, len(files)),
-		ReduceTask:make(chan Task, nReduce),
+		MapTask:make(map[int]*Task),
+		ReduceTask:make(map[int]*Task),
 		MapTaskNum:len(files),
 		ReduceTaskNum:nReduce,
-		state:0,
+		State:0,
+		Mu:sync.Mutex{},
 	}
 
 	// Your code here.
 	// assign maptask
 	for i, filepath := range files {
-		c.MapTask <- Task{Number: i, FilePath: filepath, RunningTime: 0}
+		c.MapTask[i] = &Task{FilePath:filepath, RunningTime:0, State:0}
 	}
 	c.server()
 
 	// Judge if or not all maptasks are done
-
+	for {
+		c.Mu.Lock()
+		i := 0
+		for ;i<len(files);i++ {
+			if c.MapTask[i].State == 1 {
+				c.MapTask[i].RunningTime = c.MapTask[i].RunningTime+1
+				if c.MapTask[i].RunningTime >= 10 {
+					c.MapTask[i].State = 0
+					c.MapTask[i].RunningTime = 0
+				}
+				break
+			} else if c.MapTask[i].State == 0 {
+				break
+			}
+		}
+		if i == len(files) {
+			c.State = 1
+			c.Mu.Unlock()
+			break
+		}
+		c.Mu.Unlock()
+		time.Sleep(time.Second)
+	}
 	// assign reducetask
 	// for i := 0; i < nReduce; i++ {
 

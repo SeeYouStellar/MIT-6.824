@@ -45,7 +45,6 @@ func Worker(mapf func(string, string) []KeyValue,
 	// 1. worker should ask for task continuously(although worker has done a task) until all maptask has done 
 	// 2. then worker ask for a reduce task continuously like above
 	// worker use CallGetTask reply variable to get mr state
-	
 	for {
 		args := TaskRequest{}
 		reply := TaskResponse{}
@@ -56,14 +55,18 @@ func Worker(mapf func(string, string) []KeyValue,
 				// mr in reduce phase
 				
 				// get data from rpc service  
-				Y := reply.Number          // reduce task ID
+				Y := reply.TaskNumber          // reduce task ID
 				nreduce := reply.NReduce   // number of reduce task and mroutfile
 				 
 				// decoder from mr-*-Y
 				kva := ByKey{}
 				for i:=0;i<nreduce;i++ {
 					intermediatefilepath := "mr-"+strconv.Itoa(i)+"-"+strconv.Itoa(Y)
-					dec := json.NewDecoder(intermediatefilepath)
+					intermediatefile, err := os.OpenFile(intermediatefilepath, os.O_RDONLY, 0777)
+					if err != nil {
+						log.Fatalf("cannot open reduceTask %v", intermediatefilepath)
+					}
+					dec := json.NewDecoder(intermediatefile)
 					for {
 						var kv KeyValue
 						if err := dec.Decode(&kv); err != nil {
@@ -102,7 +105,7 @@ func Worker(mapf func(string, string) []KeyValue,
 				// get data from rpc service  
 				filepath := reply.FilePath  // file need to use mapf
 				nreduce := reply.NReduce    // number of reduce task and mroutfile
-				X := reply.Number           // map task ID
+				X := reply.TaskNumber           // map task ID
 
 				// use mapf 
 				file, err := os.Open(filepath)
@@ -118,10 +121,12 @@ func Worker(mapf func(string, string) []KeyValue,
 				
 				// use a buffer and write the buffer to file in nreduce times 
 				// instead of write one kv in one time 
+				// when worker broken at writing tmpfile, the tmpfile is disappear at the same time
+				// it will prevent from writing twice at mr-X-Y when other worker do the same task
 				buffer := make([][]KeyValue, nreduce)
 				for _, kv := range kva {
 					no := (ihash(kv.Key)) % nreduce
-					buffer[no].append(buffer[no], kv)
+					buffer[no] = append(buffer[no], kv)
 				}
 				
 				// write the buffer into tmpFile then rename it to mr-X-Y
@@ -146,9 +151,18 @@ func Worker(mapf func(string, string) []KeyValue,
 				// worker die
 				break
 			}
-		}
-		time.Sleep()
-	}
+			// notify master the task has been done
+			for {
+				doneargs := DoneRequest{Type:reply.State, TaskNumber:reply.TaskNumber}
+				donereply := DoneResponse{}
+				ok := CallTaskDone(&doneargs, &donereply)
+				if ok {
+					break
+				}
+			}
+		}				
+		time.Sleep(10)
+	} 
 }
 
 //
@@ -158,7 +172,6 @@ func Worker(mapf func(string, string) []KeyValue,
 //
 
 func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
-
 	// send the RPC request, wait for the reply.
 	// the "Coordinator.Example" tells the
 	// receiving server that we'd like to call
@@ -166,14 +179,24 @@ func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
 	ok := call("Coordinator.GetTask", &args, &reply)
 	ret := true
 	if ok {
-		fmt.Printf("reply.FilePath:%s -- reply.Name:%d -- reply.NReduce:%d\n", reply.FilePath, reply.Number, reply.NReduce)
+		fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d\n", reply.FilePath, reply.TaskNumber)
 	} else {
 		ret = false
-		fmt.Printf("call failed!\n")
+		fmt.Printf("CallGetTask failed!\n")
 	}
 	return ret
 }
-
+func CallTaskDone(args *DoneRequest, reply *DoneResponse) bool {
+	ok := call("Coordinator.TaskDone", &args, &reply)
+	ret := true
+	if ok {
+		fmt.Printf("CallTaskDone successfully!\n")
+	} else {
+		ret = false
+		fmt.Printf("CallTaskDone failed!\n")
+	}
+	return ret
+}
 //
 // send an RPC request to the coordinator, wait for the response.
 // usually returns true.

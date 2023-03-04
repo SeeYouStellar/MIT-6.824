@@ -13,17 +13,20 @@ import (
 
 // Add your RPC definitions here.
 
-type TaskRequest struct {}
+type TaskRequest struct {
+	//MachineID 		int  // every worker has one MachineID
+}
 
 type TaskResponse struct {
-	Number		int
-	FilePath	string
-	NReduce		int
-	State 		int
+	TaskNumber		int
+	FilePath		string
+	NReduce			int
+	State 			int  // map--0 reduce--1 
 }
 
 type DoneRequest struct {
-	Type 		int  // map--0 reduce--1
+	Type 			int  // map--0 reduce--1
+	TaskNumber  	int 
 }
 
 type DoneResponse struct {}
