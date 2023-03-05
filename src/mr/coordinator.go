@@ -31,6 +31,7 @@ type Task struct {
 
 func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 	c.Mu.Lock()
+	flag := 1
 	if c.State == 0 {
 		// map task not finish
 		for i, maptask := range c.MapTask {
@@ -40,8 +41,12 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 				reply.ReduceTaskNum = c.ReduceTaskNum
 				reply.State = c.State
 				maptask.State = 1
+				flag = 0
 				break
 			} 
+		}
+		if flag == 1 {
+			reply.State = 3
 		}
 	} else if c.State == 1 {
 		// all maptask finished
@@ -52,8 +57,12 @@ func (c *Coordinator) GetTask(args *TaskRequest, reply *TaskResponse) error {
 				reply.State = c.State
 				reply.MapTaskNum = c.MapTaskNum
 				reducetask.State = 1
+				flag = 0
 				break
 			} 
+		}
+		if flag == 1 {
+			reply.State = 3
 		}
 	} else {
 		// mr finished 
