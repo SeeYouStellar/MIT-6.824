@@ -150,7 +150,6 @@ func Worker(mapf func(string, string) []KeyValue,
 					os.Rename(TmpFile.Name(), MapOutFileName)
 				}
 			} else if reply.State == 3 {
-				time.Sleep(time.Second*3)
 				continue
 			} else {
 				// worker die
@@ -166,8 +165,7 @@ func Worker(mapf func(string, string) []KeyValue,
 					break
 				}
 			}
-		}				
-		time.Sleep(time.Second*3)
+		}			
 	} 
 }
 
