@@ -118,7 +118,7 @@ func Worker(mapf func(string, string) []KeyValue,
 				}
 				file.Close()
 				kva := mapf(filepath, string(content)) // (k1,v1)->mapf->list(k2,v2)
-				
+				// fmt.Println(kva[1].Key, kva[1].Value)
 				// use a buffer and write the buffer to file in nreduce times 
 				// instead of write one kv in one time 
 				// when worker broken at writing tmpfile, the tmpfile is disappear at the same time
@@ -150,7 +150,7 @@ func Worker(mapf func(string, string) []KeyValue,
 					os.Rename(TmpFile.Name(), MapOutFileName)
 				}
 			} else if reply.State == 3 {
-				time.Sleep(time.Second)
+				time.Sleep(time.Second*3)
 				continue
 			} else {
 				// worker die
@@ -167,7 +167,7 @@ func Worker(mapf func(string, string) []KeyValue,
 				}
 			}
 		}				
-		time.Sleep(time.Second)
+		time.Sleep(time.Second*3)
 	} 
 }
 
@@ -185,10 +185,13 @@ func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
 	ok := call("Coordinator.GetTask", &args, &reply)
 	ret := true
 	if ok {
-		// fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d;State:%d\n", reply.FilePath, reply.TaskNumber, reply.State)
+		if reply.State != 3 {
+			fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d;State:%d\n", reply.FilePath, reply.TaskNumber, reply.State)
+		}
+		
 	} else {
 		ret = false
-		// fmt.Printf("CallGetTask failed!\n")
+		fmt.Printf("CallGetTask failed!\n")
 	}
 	return ret
 }
@@ -196,10 +199,10 @@ func CallTaskDone(args *DoneRequest, reply *DoneResponse) bool {
 	ok := call("Coordinator.TaskDone", &args, &reply)
 	ret := true
 	if ok {
-		// fmt.Printf("CallTaskDone successfully!\n")
+		fmt.Printf("CallTaskDone successfully!State:%d;TaskNum:%d\n", args.Type, args.TaskNumber)
 	} else {
 		ret = false
-		// fmt.Printf("CallTaskDone failed!\n")
+		fmt.Printf("CallTaskDone failed!\n")
 	}
 	return ret
 }

@@ -167,7 +167,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 			c.State = 1
 		}
 		i = 0
-		for ;i<len(files);i++ {
+		for ;i<nReduce;i++ {
 			if c.ReduceTask[i].State == 1 {
 				c.ReduceTask[i].RunningTime = c.ReduceTask[i].RunningTime+1
 				if c.ReduceTask[i].RunningTime >= 10 {
