@@ -60,26 +60,31 @@ rm -f mr-*
 (cd .. && go build $RACE mrsequential.go) || exit 1
 
 failed_any=0
-
-echo '***' Starting reduce parallelism test.
+echo '***' Starting map parallelism test.
 
 rm -f mr-*
 
 $TIMEOUT ../mrcoordinator ../pg*txt &
 sleep 1
 
-$TIMEOUT ../mrworker ../../mrapps/rtiming.so &
-$TIMEOUT ../mrworker ../../mrapps/rtiming.so
+$TIMEOUT ../mrworker ../../mrapps/mtiming.so &
+$TIMEOUT ../mrworker ../../mrapps/mtiming.so
 
-NT=`cat mr-out* | grep '^[a-z] 2' | wc -l | sed 's/ //g'`
-if [ "$NT" -lt "2" ]
+NT=`cat mr-out* | grep '^times-' | wc -l | sed 's/ //g'`
+if [ "$NT" != "2" ]
 then
-  echo '---' saw $NT parallel reduces.
-  echo '---' reduce parallelism test: FAIL
+  echo '---' saw "$NT" workers rather than 2
+  echo '---' map parallelism test: FAIL
   failed_any=1
+fi
+
+if cat mr-out* | grep '^parallel.* 2' > /dev/null
+then
+  echo '---' map parallelism test: PASS
 else
-  echo '---' saw $NT parallel reduces.
-  echo '---' reduce parallelism test: PASS
+  echo '---' map workers did not run in parallel
+  echo '---' map parallelism test: FAIL
+  failed_any=1
 fi
 
 wait

@@ -1126,4 +1126,4 @@ CallGetTask successfully!FilePath:;TaskNumber:0;State:2
 CallGetTask successfully!FilePath:;TaskNumber:0;State:2
 --- crash test: PASS
 *** PASSED ALL TESTS
-*** FAILED TESTS IN TRIAL 5
+*** PASSED ALL 10 TESTING TRIALS

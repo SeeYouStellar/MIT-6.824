@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"encoding/json"
-	"time"
 )
 
 //
@@ -184,12 +183,12 @@ func CallGetTask(args *TaskRequest, reply *TaskResponse) bool {
 	ret := true
 	if ok {
 		if reply.State != 3 {
-			fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d;State:%d\n", reply.FilePath, reply.TaskNumber, reply.State)
+			// fmt.Printf("CallGetTask successfully!FilePath:%s;TaskNumber:%d;State:%d\n", reply.FilePath, reply.TaskNumber, reply.State)
 		}
 		
 	} else {
 		ret = false
-		fmt.Printf("CallGetTask failed!\n")
+		// fmt.Printf("CallGetTask failed!\n")
 	}
 	return ret
 }
@@ -197,10 +196,10 @@ func CallTaskDone(args *DoneRequest, reply *DoneResponse) bool {
 	ok := call("Coordinator.TaskDone", &args, &reply)
 	ret := true
 	if ok {
-		fmt.Printf("CallTaskDone successfully!State:%d;TaskNum:%d\n", args.Type, args.TaskNumber)
+		// fmt.Printf("CallTaskDone successfully!State:%d;TaskNum:%d\n", args.Type, args.TaskNumber)
 	} else {
 		ret = false
-		fmt.Printf("CallTaskDone failed!\n")
+		// fmt.Printf("CallTaskDone failed!\n")
 	}
 	return ret
 }
