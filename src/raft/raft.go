@@ -63,13 +63,13 @@ type Raft struct {
 	// Your data here (2A, 2B, 2C).
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
-	currentTerm int
-	votedFor 	int
-	log			
-	commitIndex int
-	lastApplied int
-	nextIndex	[]int
-	matchIndex 	[]int
+	currentTerm uint64
+	votedFor 	uint64
+	// log			[]
+	commitIndex uint64
+	lastApplied uint64
+	nextIndex	[]uint64
+	matchIndex 	[]uint64
 }
 
 // return currentTerm and whether this server
@@ -149,10 +149,10 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 //
 type RequestVoteArgs struct {
 	// Your data here (2A, 2B).
-	Term 			int
-	CandidateId 	int
-	LastLogIndex 	int
-	LastLogTerm 	int
+	Term 			uint64
+	CandidateId 	uint64
+	LastLogIndex 	uint64
+	LastLogTerm 	uint64
 }
 
 //
@@ -161,17 +161,36 @@ type RequestVoteArgs struct {
 //
 type RequestVoteReply struct {
 	// Your data here (2A).
-	Term 			int
+	Term 			uint64
 	VoteGranted 	bool
 }
 
+//
+// example RequestVote RPC handler.
+//
+func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
+	// Your code here (2A, 2B).
+	if args.Term < currentTerm {
+		reply.VoteGranted = false
+	} else {
+		if rf.votedFor == nil || rf.votedFor = args.CandidateId {
+			if (args.LastLogTerm > rf.currentTerm) || (args.LastLogTerm == rf.currentTerm && args.LastLogIndex >= rf.commitIndex) {
+				reply.VoteGranted = true
+			} else {
+				reply.VoteGranted = false
+			}
+		} else {
+			reply.VoteGranted = false
+		}
+	}
+}
 type AppendEntriesArgs struct {
-	Term 			int
-	LeaderId 		int
-	PrevLogIndex 	int
-	PrevLogTerm 	int	
-	Entries 		[]LogEntry
-	LeaderCommit 	int
+	Term 			uint64
+	LeaderId 		uint64
+	PrevLogIndex 	uint64
+	PrevLogTerm 	uint64	
+	// Entries 		[]
+	LeaderCommit 	uint64
 }
 
 type AppendEntriesReply struct {
@@ -182,13 +201,7 @@ type AppendEntriesReply struct {
 func (rf *Raft) AppendEntries(args *, reply *) {
 
 }
-//
-// example RequestVote RPC handler.
-//
-func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-	// Your code here (2A, 2B).
 
-}
 
 //
 // example code to send a RequestVote RPC to a server.
