@@ -79,7 +79,7 @@ type Raft struct {
 	nextIndex	[]int   // only master have
 	matchIndex 	[]int	// only master have
 	state		int
-	timer		time.Timer
+	timer		*time.Timer
 	votedNum	int32
 }
 
@@ -220,13 +220,18 @@ type AppendEntriesReply struct {
 }
 
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
-
-	if args.LeaderCommit == rf.commitIndex {
+	rf.mu.Lock()
+	if args.Term < rf.currentTerm {
+		reply.Success = false
+	} else if args.LeaderCommit == rf.commitIndex {
 		// heartbeat
-		
+		rf.timer.Reset(randTime())
+		reply.Success = true
 	} else {
-		// appendentries request
+		// appendentries
 	}
+	reply.Term = rf.currentTerm
+	rf.mu.Unlock()
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
@@ -362,17 +367,23 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			}
 		case STATE_CANDIDATE:
 			rf.startElection()
-			select {
-			case <- rf.timer.C :
-				if voteNum >= len(peers)/2+1 {
-					rf.updateState(STATE_LEADER)
-				} else if rf.currentTerm != oldTerm {
-					rf.updateState(STATE_FOLLOWER)
-				} else if voteNum < len(peers)/2+1 {
-					rf.updateState(STATE_CANDIDATE)
+		case STATE_LEADER:
+			for {
+				for i, _ range rf.peers {
+					if i == rf.me {
+						continue
+					}
+					args := &AppendEntriesArgs{
+						Term: rf.currentTerm,
+						LeaderId: rf.me,
+						// PrevLogIndex: 
+						// PrevLogTerm: 
+						// log 			[]LogEntry
+						// LeaderCommit:
+					}
+					replys := &AppendEntriesReply{}
 				}
 			}
-		case STATE_LEADER:
 		default:
 
 		}
@@ -416,7 +427,10 @@ func (rf *Raft) startElection() {
 
 	rf.votedFor = rf.me
 	rf.votedNum = 1
-	atomic.AddInt32(&rf.currentTerm, 1)
+
+	rf.mu.Lock()
+	rf.currentTerm += 1
+	rf.mu.Unlock()
 
 	rf.timer.Reset(randTime())
 
@@ -431,20 +445,39 @@ func (rf *Raft) startElection() {
 			continue
 		}
 		go func(server int){
-			reply := &RequestVoteReply{}
-			ret := rf.sendRequestVote(i, args, reply)
-			if rf.state == STATE_CANDIDATE && ret {
-				if reply.VoteGranted == true {
-					atomic.AddInt32(&rf.voteNum, 1) 
+			rf.mu.Lock()
+			if rf.state == STATE_CANDIDATE {
+				reply := &RequestVoteReply{}
+				ret := rf.sendRequestVote(i, args, reply)
+				if ret {
+					if reply.VoteGranted == true {
+						rf.votedNum += 1
+					} else if reply.Term > rf.currentTerm {
+						rf.currentTerm = reply.Term
+						rf.state = STATE_FOLLOWER
+					}
 				} else {
-
+					log.Fatalf("machine %d sendRequestVote to machine %d failed\n", rf.me, i)
 				}
-			} else {
-				log.Fatalf("machine %d sendRequestVote to machine %d failed\n", rf.me, i)
-			}
+			} 
+			rf.mu.Unlock()
 		}(i)
 	}
+
+	select {
+	case <- rf.timer.C :
+		rf.mu.Lock()
+		if rf.votedNum >= len(peers)/2+1 {
+			rf.updateState(STATE_LEADER)
+		} else if rf.state != STATE_CANDIDATE {
+			rf.updateState(STATE_FOLLOWER)
+		} else if rf.votedNum < len(peers)/2+1 {
+			rf.updateState(STATE_CANDIDATE)
+		}
+		rf.mu.Unlock()
+	}
 }
+
 // election timeout
 func randTime() time.Duration {
 	r := rand.New(rand.Newsource(time.Now().UnixNano()))
