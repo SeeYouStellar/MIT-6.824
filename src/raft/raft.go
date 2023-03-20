@@ -25,6 +25,8 @@ import (
 	//	"6.824/labgob"
 	"6.824/labrpc"
 	"math/rand"
+	"time"
+	"log"
 )
 
 
@@ -69,20 +71,24 @@ type Raft struct {
 	// Your data here (2A, 2B, 2C).
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
-	currentTerm int
+	currentTerm int32
 	votedFor 	int
 	// log			[]LogEntry
 	commitIndex int
 	lastApplied int
-	nextIndex	[]int
-	matchIndex 	[]int
+	nextIndex	[]int   // only master have
+	matchIndex 	[]int	// only master have
+	state		int
+	timer		time.Timer
+	votedNum	int32
 }
 
 const {
-	STATE_FOLLOWER = itoa
+	STATE_FOLLOWER = iota
 	STATE_CANDIDATE
 	STATE_LEADER
 }
+
 // return currentTerm and whether this server
 // believes it is the leader.
 func (rf *Raft) GetState() (int, bool) {
@@ -342,48 +348,35 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	// Your initialization code here (2A, 2B, 2C).
 	rf.currentTerm = 0
 	rf.commitIndex = 0
-	rf.lastApplied = 0
+	rf.lastApplied = 0          
+	rf.state = STATE_FOLLOWER  // init with follower
+	rf.timer = time.NewTimer{randTime()}
 
-	// convert to candidate
-	
 	for {
-		voteNum := 1  // vote for itself
-		isdelay := false
-		rf.currentTerm += 1
-		args := &RequestVoteArgs{
-			Term: rf.currentTerm, 
-			CandidateId: rf.me, 
-			// LastLogIndex: 0, 
-			// LastLogTerm: 0,
-		}
-		if voteNum >= (len(peers)/2)+1 {
-			// convert to leader
-
-			break
-		} else if voteNum < (len(peers)/2)+1 {
-			// restart a election timeout 
-			
-			for i:=0;i<len(peers);i++ {
-				go func(){
-					reply := &RequestVoteReply{}
-					rf.sendRequestVote(i, args, reply)
-					if reply.VoteGranted == true {
-						voteNum += 1
-					} else if reply.Term != nil {
-						// delay
-						isdelay = true
-					}
-				}()
+		switch rf.state {
+		case STATE_FOLLOWER:
+			select {
+			case <- rf.timer.C :
+				// follower -> candidate
+				rf.updateState(STATE_CANDIDATE)
 			}
-			
-			time.Sleep()
-		} else if delay {
-			// convert to follower
+		case STATE_CANDIDATE:
+			rf.startElection()
+			select {
+			case <- rf.timer.C :
+				if voteNum >= len(peers)/2+1 {
+					rf.updateState(STATE_LEADER)
+				} else if rf.currentTerm != oldTerm {
+					rf.updateState(STATE_FOLLOWER)
+				} else if voteNum < len(peers)/2+1 {
+					rf.updateState(STATE_CANDIDATE)
+				}
+			}
+		case STATE_LEADER:
+		default:
 
-			break
 		}
 	}
-
 
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
@@ -393,4 +386,67 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 
 	return rf
+}
+
+func (rf *Raft) updateState(state int) {
+	// now other thread has not access rf.state, so i'm not use sync.mutex
+	if rf.state == state {
+		return 
+	}
+	oldState := rf.state
+	switch state {
+	case STATE_FOLLOWER:
+		rf.state = STATE_FOLLOWER
+	case STATE_CANDIDATE:
+		rf.state = STATE_CANDIDATE
+	case STATE_LEADER:
+		rf.state = STATE_LEADER
+	default:	
+		log.Fatalf("unknowned state &%d\n", state)
+	}
+	fmt.Printf("In term %d machine %d updateState from %d to %d\n", rf.currentTerm, rf.me, oldState, rf.state)
+}
+
+func (rf *Raft) startElection() {
+	// start election
+	// 1.vote for itself
+	// 2.increase current term
+	// 3.reset election timer
+	// 4.send vote request
+
+	rf.votedFor = rf.me
+	rf.votedNum = 1
+	atomic.AddInt32(&rf.currentTerm, 1)
+
+	rf.timer.Reset(randTime())
+
+	args := &RequestVoteArgs{
+		Term: rf.currentTerm, 
+		CandidateId: rf.me, 
+		// LastLogIndex: 0, 
+		// LastLogTerm: 0,
+	}
+	for i, _ := range peers {
+		if i == rf.me {
+			continue
+		}
+		go func(server int){
+			reply := &RequestVoteReply{}
+			ret := rf.sendRequestVote(i, args, reply)
+			if rf.state == STATE_CANDIDATE && ret {
+				if reply.VoteGranted == true {
+					atomic.AddInt32(&rf.voteNum, 1) 
+				} else {
+
+				}
+			} else {
+				log.Fatalf("machine %d sendRequestVote to machine %d failed\n", rf.me, i)
+			}
+		}(i)
+	}
+}
+// election timeout
+func randTime() time.Duration {
+	r := rand.New(rand.Newsource(time.Now().UnixNano()))
+	return time.Microsecond*time.Duration((r.Intn(150)+350))  // time.Duration ：change int->time
 }
