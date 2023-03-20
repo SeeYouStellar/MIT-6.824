@@ -53,11 +53,11 @@ type ApplyMsg struct {
 	SnapshotIndex int
 }
 
-// type LogEntry struct {
-// 	Command		interface{}
-// 	Term 		int
-// 	index 		int
-// }
+type LogEntry struct {
+	Command		interface{}
+	Term 		int
+	index 		int
+}
 //
 // A Go object implementing a single Raft peer.
 //
@@ -73,7 +73,7 @@ type Raft struct {
 	// state a Raft server must maintain.
 	currentTerm int32
 	votedFor 	int
-	// log			[]LogEntry
+	log			[]LogEntry
 	commitIndex int
 	lastApplied int
 	nextIndex	[]int   // only master have
@@ -190,7 +190,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.mu.Lock()
 	if args.Term < rf.currentTerm {
 		reply.VoteGranted = false
-		reply.Term = rf.currentTerm
 	} else {
 		if rf.votedFor == nil || rf.votedFor = args.CandidateId {
 			if (args.LastLogTerm > rf.currentTerm) || (args.LastLogTerm == rf.currentTerm && args.LastLogIndex >= len(rf.log)-1) {
@@ -203,6 +202,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			reply.VoteGranted = false
 		}
 	}
+	reply.Term = rf.currentTerm
 	rf.mu.Unlock()
 }
 type AppendEntriesArgs struct {
@@ -210,7 +210,7 @@ type AppendEntriesArgs struct {
 	LeaderId 		int
 	PrevLogIndex 	int
 	PrevLogTerm 	int	
-	// log 			[]LogEntry
+	log 			[]LogEntry
 	LeaderCommit 	int
 }
 
@@ -223,7 +223,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	rf.mu.Lock()
 	if args.Term < rf.currentTerm {
 		reply.Success = false
-	} else if args.LeaderCommit == rf.commitIndex {
+	} else if len(args.log) == 0 {
 		// heartbeat
 		rf.timer.Reset(randTime())
 		reply.Success = true
@@ -369,20 +369,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			rf.startElection()
 		case STATE_LEADER:
 			for {
-				for i, _ range rf.peers {
-					if i == rf.me {
-						continue
-					}
-					args := &AppendEntriesArgs{
-						Term: rf.currentTerm,
-						LeaderId: rf.me,
-						// PrevLogIndex: 
-						// PrevLogTerm: 
-						// log 			[]LogEntry
-						// LeaderCommit:
-					}
-					replys := &AppendEntriesReply{}
-				}
+				rf.broadcastHeartbeat()
+				time.Sleep(10)
 			}
 		default:
 
@@ -398,7 +386,44 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	return rf
 }
+func (rf *Raft) broadcastHeartbeat() {
+	args := &AppendEntriesArgs{
+		Term: rf.currentTerm,
+		LeaderId: rf.me,
+		// PrevLogIndex: 
+		// PrevLogTerm: 
+		// log 			[]LogEntry
+		// LeaderCommit:
+	}
+	for i, _ range rf.peers {
+		if i == rf.me {
+			continue
+		}
+		
+		go func(server int) {
+			rf.mu.Lock()
+			if rf.state == STATE_LEADER {
+				reply := &AppendEntriesReply{}
+				ret := rf.sendAppendEntries(server, args, reply)
+				if ret {
+					if reply.Success == false {
+						if reply.Term > rf.currentTerm {
+							// follower.term > leader.term
+							rf.updateState(STATE_FOLLOWER)
+							rf.currentTerm = reply.Term
+						} else {
 
+						}
+					} 
+				} else {
+					log.Fatalf("machine %d sendheartbeat to machine %d failed\n", rf.me, server)
+				}
+			}
+			rf.mu.Unlock()
+		}(i)
+		
+	}	
+}
 func (rf *Raft) updateState(state int) {
 	// now other thread has not access rf.state, so i'm not use sync.mutex
 	if rf.state == state {
@@ -425,14 +450,12 @@ func (rf *Raft) startElection() {
 	// 3.reset election timer
 	// 4.send vote request
 
+	rf.mu.Lock()
 	rf.votedFor = rf.me
 	rf.votedNum = 1
-
-	rf.mu.Lock()
 	rf.currentTerm += 1
-	rf.mu.Unlock()
-
 	rf.timer.Reset(randTime())
+	rf.mu.Unlock()
 
 	args := &RequestVoteArgs{
 		Term: rf.currentTerm, 
@@ -454,10 +477,10 @@ func (rf *Raft) startElection() {
 						rf.votedNum += 1
 					} else if reply.Term > rf.currentTerm {
 						rf.currentTerm = reply.Term
-						rf.state = STATE_FOLLOWER
+						rf.updateState(STATE_FOLLOWER)
 					}
 				} else {
-					log.Fatalf("machine %d sendRequestVote to machine %d failed\n", rf.me, i)
+					log.Fatalf("machine %d sendRequestVote to machine %d failed\n", rf.me, server)
 				}
 			} 
 			rf.mu.Unlock()
