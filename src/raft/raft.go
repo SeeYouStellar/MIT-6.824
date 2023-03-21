@@ -73,7 +73,7 @@ type Raft struct {
 	// state a Raft server must maintain.
 	currentTerm int32
 	votedFor 	int
-	log			[]LogEntry
+	log			[]LogEntry  // use in log replica part
 	commitIndex int
 	lastApplied int
 	nextIndex	[]int   // only master have
@@ -81,8 +81,10 @@ type Raft struct {
 	state		int
 	timer		*time.Timer
 	votedNum	int32
+	
 }
 
+// state
 const {
 	STATE_FOLLOWER = iota
 	STATE_CANDIDATE
@@ -192,15 +194,19 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		reply.VoteGranted = false
 	} else {
 		if rf.votedFor == nil || rf.votedFor = args.CandidateId {
-			if (args.LastLogTerm > rf.currentTerm) || (args.LastLogTerm == rf.currentTerm && args.LastLogIndex >= len(rf.log)-1) {
-				reply.VoteGranted = true
-				rf.votedFor = args.CandidateId
-			} else {
-				reply.VoteGranted = false
-			}
+			// use in log replication part
+			// if (args.LastLogTerm > rf.currentTerm) || (args.LastLogTerm == rf.currentTerm && args.LastLogIndex >= len(rf.log)-1) {
+			// 	reply.VoteGranted = true
+			// 	rf.votedFor = args.CandidateId
+			// } else {
+			// 	reply.VoteGranted = false
+			// }
+			reply.VoteGranted = true
+			rf.votedFor = args.CandidateId
 		} else {
 			reply.VoteGranted = false
 		}
+		rf.currentTerm = reply.Term   // update follower's term
 	}
 	reply.Term = rf.currentTerm
 	rf.mu.Unlock()
@@ -225,7 +231,16 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		reply.Success = false
 	} else if len(args.log) == 0 {
 		// heartbeat
+		// when a server get heartbeat from a leader whose term is at least as large as the candidate's term
+		// candidate(follower) -> follower
+
+		// reset election timerout
+		rf.timer.Stop()
 		rf.timer.Reset(randTime())
+		
+		rf.currentTerm = args.Term
+		rf.updateState(STATE_FOLLOWER)
+		
 		reply.Success = true
 	} else {
 		// appendentries
@@ -386,7 +401,12 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	return rf
 }
-func (rf *Raft) broadcastHeartbeat() {
+// func (rf *Raft) setHeartBeat() {
+// 	go func(){
+// 		rf.heartBeat <- true
+// 	}()
+// }
+func (rf *Raft) broadcastHeartBeat() {
 	args := &AppendEntriesArgs{
 		Term: rf.currentTerm,
 		LeaderId: rf.me,
@@ -412,9 +432,9 @@ func (rf *Raft) broadcastHeartbeat() {
 							rf.updateState(STATE_FOLLOWER)
 							rf.currentTerm = reply.Term
 						} else {
-
+							 
 						}
-					} 
+					}
 				} else {
 					log.Fatalf("machine %d sendheartbeat to machine %d failed\n", rf.me, server)
 				}
@@ -451,10 +471,12 @@ func (rf *Raft) startElection() {
 	// 4.send vote request
 
 	rf.mu.Lock()
+
 	rf.votedFor = rf.me
 	rf.votedNum = 1
 	rf.currentTerm += 1
 	rf.timer.Reset(randTime())
+
 	rf.mu.Unlock()
 
 	args := &RequestVoteArgs{
