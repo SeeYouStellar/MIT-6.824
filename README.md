@@ -18,7 +18,11 @@ directly. You only need to watch the first 2 videos to have a new view on this l
 2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
 ## lab2: Raft
 
-in progress
+:calendar: 2023/3/15 lab 2A begin
+
+:golf: 2023/3/22 lab 2A finished 
+
+:golf: 2023/3/23 lab2B begin
 
 ## lab3: KV Raft
 
