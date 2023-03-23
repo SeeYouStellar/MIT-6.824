@@ -9,18 +9,45 @@
 
 :calendar: 2023/2/25 begin 
 
-:golf: 2023/3/5 finished 
+:golf: 2023/3/5 finished
+
+::clipboard: test 
+
+single test
+
+![single test-mr](./image/image1.jpg)
+
+multiple tests 
+
+![multiple test-mr](./image/image2.jpg)
 
 :bulb: **something useful:** 
 
 1. [if you have no idea about the lab](https://www.bilibili.com/video/BV1sr4y1g7Lx/?spm_id_from=333.788&vd_source=32f55c0f732463a8c1ed4c72feae6ab6),When you have no idea, you can start with this video. This person’s idea at the beginning is wrong, so you will not get a useful implementation method 
 directly. You only need to watch the first 2 videos to have a new view on this lab.
 2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
+
 ## lab2: Raft
 
+### lab2A-LeaderElection
 :calendar: 2023/3/15 lab 2A begin
 
 :golf: 2023/3/22 lab 2A finished 
+
+::clipboard: test 
+
+single test
+
+![single test](./image/image3.jpg)
+
+multiple test
+
+![multiple test](./image/image4.jpg)
+
+:bulb: **something useful:** 
+
+1. [go-test-many.sh](https://gist.github.com/jonhoo/f686cacb4b9fe716d5aa), this file is used for many times test, which is run as ```bash go-test-many.sh [Times] [Parallel test number] [test subset]```
+
 
 :golf: 2023/3/23 lab2B begin
 

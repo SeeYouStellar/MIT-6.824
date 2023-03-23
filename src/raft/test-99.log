@@ -1,0 +1,107 @@
+=== RUN   TestInitialElection2A
+Test (2A): initial election ...
+term 0, machine 0 become a candidate
+term 1, machine 1 vote for machine 0
+term 1, machine 0 become a leader
+term 1, machine 2 vote for machine 0
+term 1, machine 0 become a leader
+labgob error: lower-case field log of AppendEntriesArgs in RPC or persist/snapshot will break your Raft
+labgob error: lower-case field index of LogEntry in RPC or persist/snapshot will break your Raft
+  ... Passed --   3.0  3   56    9600    0
+--- PASS: TestInitialElection2A (3.03s)
+=== RUN   TestReElection2A
+Test (2A): election after network failure ...
+term 1, machine 1 become a candidate
+term 1, machine 2 become a candidate
+term 0, machine 1 become a candidate
+term 1, machine 2 vote for machine 1
+term 1, machine 0 vote for machine 1
+term 1, machine 1 become a leader
+term 1, machine 1 become a leader
+term 1, machine 0 become a candidate
+term 2, machine 2 vote for machine 0
+term 2, machine 0 become a leader
+term 2, machine 2 become a candidate
+term 2, machine 1 become a candidate
+term 9, machine 1 vote for machine 2
+term 9, machine 2 become a leader
+  ... Passed --   4.4  3  158   19342    0
+--- PASS: TestReElection2A (4.38s)
+=== RUN   TestManyElections2A
+Test (2A): multiple elections ...
+term 9, machine 1 become a candidate
+term 0, machine 0 become a candidate
+term 1, machine 3 vote for machine 0
+term 1, machine 1 vote for machine 0
+term 1, machine 2 vote for machine 0
+term 1, machine 5 vote for machine 0
+term 1, machine 6 vote for machine 0
+term 1, machine 0 become a leader
+term 1, machine 4 vote for machine 0
+term 1, machine 0 become a leader
+term 1, machine 0 become a leader
+term 1, machine 0 become a leader
+term 9, machine 0 become a candidate
+term 1, machine 5 become a candidate
+term 2, machine 2 vote for machine 5
+term 2, machine 3 vote for machine 5
+term 2, machine 4 vote for machine 5
+term 2, machine 1 vote for machine 5
+term 2, machine 5 become a leader
+term 2, machine 5 become a leader
+term 1, machine 6 become a candidate
+term 2, machine 1 become a candidate
+term 2, machine 3 become a candidate
+term 3, machine 6 vote for machine 3
+term 3, machine 4 vote for machine 3
+term 3, machine 0 vote for machine 3
+term 3, machine 3 become a leader
+term 2, machine 2 become a candidate
+term 4, machine 3 vote for machine 2
+term 4, machine 0 vote for machine 2
+term 4, machine 6 vote for machine 2
+term 4, machine 4 vote for machine 2
+term 4, machine 2 become a leader
+term 4, machine 2 become a leader
+term 4, machine 4 become a candidate
+term 5, machine 6 vote for machine 4
+term 5, machine 0 vote for machine 4
+term 5, machine 3 vote for machine 4
+term 5, machine 4 become a leader
+term 4, machine 1 become a candidate
+term 5, machine 0 become a candidate
+term 5, machine 3 vote for machine 1
+term 7, machine 6 vote for machine 0
+term 7, machine 2 vote for machine 0
+term 7, machine 5 vote for machine 0
+term 7, machine 4 vote for machine 0
+term 7, machine 0 become a leader
+term 7, machine 0 become a leader
+term 5, machine 3 become a candidate
+term 5, machine 1 become a candidate
+term 7, machine 2 vote for machine 3
+term 7, machine 4 vote for machine 3
+term 7, machine 5 become a candidate
+term 7, machine 6 vote for machine 3
+term 7, machine 4 become a candidate
+term 10, machine 6 vote for machine 1
+term 10, machine 3 vote for machine 1
+term 10, machine 0 vote for machine 1
+term 10, machine 1 become a leader
+term 7, machine 2 become a candidate
+term 10, machine 3 vote for machine 4
+term 10, machine 0 vote for machine 4
+term 10, machine 5 vote for machine 4
+term 10, machine 6 vote for machine 4
+term 10, machine 4 become a leader
+term 10, machine 4 become a leader
+term 10, machine 2 vote for machine 4
+term 10, machine 4 become a leader
+term 10, machine 0 vote for machine 5
+term 10, machine 4 vote for machine 1
+term 10, machine 1 become a leader
+term 10, machine 2 vote for machine 1
+term 10, machine 1 become a leader
+  ... Passed --   5.5  7  803  104014    0
+--- PASS: TestManyElections2A (5.46s)
+PASS

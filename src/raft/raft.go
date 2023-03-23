@@ -228,22 +228,26 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	if args.Term < rf.currentTerm {
 		return
 	} else if args.Term > rf.currentTerm {
+
 		// if candidate's term is bigger than follower/candidate, it will update term,get vote and reset.and if rf is a candidate, it should change state
 		rf.state = STATE_FOLLOWER
 		rf.votedFor = args.CandidateId
 		rf.votedNum = 0
-		rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond // prevent follower from starting a election
+		rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
 		rf.timer.Reset(rf.overTime)
+		rf.currentTerm = args.Term
 
 		reply.VoteGranted = true
+		// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
 	} else {
 		//  if has the same term, it should judge whether rf has voted for another candidate
 		if rf.votedFor == -1 || rf.votedFor == args.CandidateId {
 			rf.votedFor = args.CandidateId
-			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond // prevent follower from starting a election
+			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
 			rf.timer.Reset(rf.overTime)
 
 			reply.VoteGranted = true
+			// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
 		}
 	}
 
@@ -286,7 +290,11 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	// there has another solution that use 10 times(or a static timeout) to call, if ok is still false, then return
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	for ok == false {
-		ok = rf.peers[server].Call("Raft.RequestVote", args, reply)
+		if rf.killed() == false {
+			ok = rf.peers[server].Call("Raft.RequestVote", args, reply)
+		} else {
+			break
+		}
 	}
 
 	rf.mu.Lock()
@@ -301,7 +309,8 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	// operate the vote situation in this func instead of out of this func
 	if reply.VoteGranted == true {
 		rf.votedNum += 1
-		if int(rf.votedNum) >= len(rf.peers)/2+1 {
+		if int(rf.votedNum) >= (len(rf.peers)/2)+1 {
+			// fmt.Printf("term %d, machine %d become a leader\n", rf.currentTerm, rf.me)
 			rf.state = STATE_LEADER
 			rf.timer.Reset(HeartBeatTimeout)
 		}
@@ -313,7 +322,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 			rf.currentTerm = reply.Term
 			rf.votedFor = -1
 			rf.votedNum = 0
-			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 			rf.timer.Reset(rf.overTime)
 
 		} else {
@@ -341,7 +350,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.currentTerm = args.Term
 		rf.votedNum = 0
 		rf.votedFor = -1
-		rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+		rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 		rf.timer.Reset(rf.overTime)
 
 		reply.Success = true
@@ -354,7 +363,11 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	// the same as sendRequestVote
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	for ok == false {
-		ok = rf.peers[server].Call("Raft.AppendEntries", args, reply)
+		if rf.killed() == false {
+			ok = rf.peers[server].Call("Raft.AppendEntries", args, reply)
+		} else {
+			break
+		}
 	}
 
 	rf.mu.Lock()
@@ -364,7 +377,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		return false
 	}
 
-	//情况2: 心跳不允许
 	if reply.Success == false {
 		if reply.Term > rf.currentTerm {
 			rf.state = STATE_FOLLOWER
@@ -372,7 +384,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 			rf.votedFor = -1
 			rf.votedNum = 0
-			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 			rf.timer.Reset(rf.overTime)
 		} else {
 			// log replica part
@@ -431,7 +443,7 @@ func (rf *Raft) killed() bool {
 // heartsbeats recently.
 func (rf *Raft) ticker() {
 
-	time.Sleep(1 * time.Millisecond) // wait tester to write "test(2A)"
+	time.Sleep(5 * time.Millisecond) // wait tester to write "test(2A)"
 
 	for rf.killed() == false {
 
@@ -445,10 +457,11 @@ func (rf *Raft) ticker() {
 			switch rf.state {
 			case STATE_FOLLOWER:
 				rf.state = STATE_CANDIDATE
-				fallthrough
+				// fmt.Printf("term %d, machine %d become a candidate\n", rf.currentTerm, rf.me)
+				fallthrough // good idea
 			case STATE_CANDIDATE:
 				rf.currentTerm += 1
-				rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+				rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // rand.Intn(x):生成[0,200)之内的随机数
 				rf.timer.Reset(rf.overTime)
 
 				rf.votedFor = rf.me
@@ -463,7 +476,7 @@ func (rf *Raft) ticker() {
 				}
 			case STATE_LEADER:
 				rf.timer.Reset(HeartBeatTimeout)
-				for j, _ := range rf.peers {
+				for j := range rf.peers {
 					if j == rf.me {
 						continue
 					}
@@ -473,6 +486,7 @@ func (rf *Raft) ticker() {
 				}
 
 			}
+
 			rf.mu.Unlock()
 		}
 
@@ -492,6 +506,9 @@ func (rf *Raft) ticker() {
 //
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
+
+	rand.Seed(time.Now().UnixNano())
+
 	rf := &Raft{}
 	rf.peers = peers
 	rf.persister = persister
@@ -501,7 +518,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.currentTerm = 0
 	rf.votedFor = -1
 	rf.state = STATE_FOLLOWER
-	rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+	rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 	rf.timer = time.NewTimer(rf.overTime)
 
 	// initialize from state persisted before a crash
