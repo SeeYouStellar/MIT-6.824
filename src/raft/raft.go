@@ -80,9 +80,10 @@ type Raft struct {
 	votedNum    int32
 
 	// persistent
-	log        []LogEntry
-	nextIndex  []int
-	matchIndex []int
+	log              []LogEntry
+	nextIndex        []int
+	matchIndex       []int
+	logReplicatedNum []int
 	// in memory
 	commitIndex int
 	lastApplied int
@@ -418,8 +419,19 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 			rf.timer.Reset(rf.overTime)
 		} else {
 			// log replica part: log inconsistence
-
+			rf.nextIndex[server] -= 1
 		}
+	} else {
+		// log replica successfully
+		rf.nextIndex[server] = rf.nextIndex[server] + len(args.log) - 1
+		// rf.matchIndex[server] =
+		// for i := 0; i < len(args.log); i++ {
+		// 	rf.logReplicatedNum[i+rf.nextIndex[server]] += 1
+		// 	if rf.logReplicatedNum[i+rf.nextIndex[server]] >= (len(rf.peers)/2)+1 {
+
+		// 	}
+		// }
+
 	}
 
 	return true
