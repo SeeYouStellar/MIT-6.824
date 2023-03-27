@@ -57,7 +57,6 @@ type ApplyMsg struct {
 type LogEntry struct {
 	Command interface{}
 	Term    int
-	index   int
 }
 
 //
@@ -80,12 +79,13 @@ type Raft struct {
 	overTime    time.Duration
 	votedNum    int32
 
-	// log         []LogEntry // use in log replica part
-	// commitIndex int
-	// lastApplied int
-	// nextIndex   []int // only master have
-	// matchIndex  []int // only master have
-
+	// persistent
+	log        []LogEntry
+	nextIndex  []int
+	matchIndex []int
+	// in memory
+	commitIndex int
+	lastApplied int
 }
 
 // heartbeat timeout
@@ -125,8 +125,8 @@ type AppendEntriesArgs struct {
 	LeaderId     int
 	PrevLogIndex int
 	PrevLogTerm  int
-	log          []LogEntry
 	LeaderCommit int
+	log          []LogEntry
 }
 
 type AppendEntriesReply struct {
@@ -214,14 +214,14 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 //
 // example RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-	// Your code here (2A, 2B).
 
+	// Your code here (2A, 2B).
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
-	// init return
 	reply.VoteGranted = false
 	reply.Term = rf.currentTerm
+	lastRfLogIndex := len(rf.log) - 1
 
 	// operate state and term change
 
@@ -229,28 +229,35 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	} else if args.Term > rf.currentTerm {
 
-		// if candidate's term is bigger than follower/candidate, it will update term,get vote and reset.and if rf is a candidate, it should change state
-		rf.state = STATE_FOLLOWER
-		rf.votedFor = args.CandidateId
-		rf.votedNum = 0
-		rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
-		rf.timer.Reset(rf.overTime)
-		rf.currentTerm = args.Term
-
-		reply.VoteGranted = true
-		// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
-	} else {
-		//  if has the same term, it should judge whether rf has voted for another candidate
-		if rf.votedFor == -1 || rf.votedFor == args.CandidateId {
+		if args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex) {
+			// if candidate's term is bigger than follower/candidate, it will update term,get vote and reset.and if rf is a candidate, it should change state
+			rf.state = STATE_FOLLOWER
 			rf.votedFor = args.CandidateId
+			rf.votedNum = 0
 			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
 			rf.timer.Reset(rf.overTime)
+			rf.currentTerm = args.Term
 
 			reply.VoteGranted = true
 			// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
+		} else {
+			return
+		}
+	} else {
+		//  if has the same term, it should judge whether rf has voted for another candidate
+		if rf.votedFor == -1 || rf.votedFor == args.CandidateId {
+			if args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex) {
+				rf.votedFor = args.CandidateId
+				rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
+				rf.timer.Reset(rf.overTime)
+
+				reply.VoteGranted = true
+				// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
+			} else {
+				return
+			}
 		}
 	}
-
 }
 
 //
@@ -286,9 +293,11 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 	// candidate call RequestVote rpc via sendRequestVote function, so rf is the candidate
 
+	// send at once
+	// don't use lock when call rpc
+	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	// sentRequestVote until success when meet the network problem or the server dead
 	// there has another solution that use 10 times(or a static timeout) to call, if ok is still false, then return
-	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	for ok == false {
 		if rf.killed() == false {
 			ok = rf.peers[server].Call("Raft.RequestVote", args, reply)
@@ -326,7 +335,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 			rf.timer.Reset(rf.overTime)
 
 		} else {
-			// log replica part
+			// if candidate's log is not at least as up-to-date as , candidate should do nothing
 		}
 	}
 
@@ -343,7 +352,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	if args.Term < rf.currentTerm {
 		return
-	} else {
+	} else if len(args.log) == 0 {
 		// heartbeat
 
 		rf.state = STATE_FOLLOWER
@@ -354,6 +363,27 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.timer.Reset(rf.overTime)
 
 		reply.Success = true
+	} else {
+		if rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
+			return
+		} else {
+
+			if len(rf.log) > args.PrevLogIndex+1 && rf.log[args.PrevLogIndex+1].Term != args.log[0].Term {
+				// delete the conflict entry and all that follow it
+				rf.log = rf.log[:args.PrevLogIndex+1]
+			}
+			// append args.entries
+			rf.log = append(rf.log, args.log...)
+			reply.Success = true
+			// update commitIndex
+			if args.LeaderCommit > rf.commitIndex {
+				if args.LeaderCommit > len(rf.log)-1 {
+					rf.commitIndex = len(rf.log) - 1
+				} else {
+					rf.commitIndex = args.LeaderCommit
+				}
+			}
+		}
 	}
 
 }
@@ -387,7 +417,8 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 			rf.timer.Reset(rf.overTime)
 		} else {
-			// log replica part
+			// log replica part: log inconsistence
+
 		}
 	}
 
@@ -472,7 +503,7 @@ func (rf *Raft) ticker() {
 						continue
 					}
 					reply := RequestVoteReply{}
-					go rf.sendRequestVote(i, &RequestVoteArgs{Term: rf.currentTerm, CandidateId: rf.me}, &reply)
+					go rf.sendRequestVote(i, &RequestVoteArgs{Term: rf.currentTerm, CandidateId: rf.me, LastLogIndex: len(rf.log) - 1, LastLogTerm: rf.log[len(rf.log)-1].Term}, &reply)
 				}
 			case STATE_LEADER:
 				rf.timer.Reset(HeartBeatTimeout)

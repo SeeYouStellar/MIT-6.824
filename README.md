@@ -15,11 +15,11 @@
 
 single test
 
-![single test-mr](./image/image1.jpg)
+<img src="./image/image1.jpg" width="300px" />
 
 multiple tests 
 
-![multiple test-mr](./image/image2.jpg)
+<img src="./image/image2.jpg" width="300px" />
 
 :bulb: **something useful:** 
 
@@ -38,11 +38,11 @@ directly. You only need to watch the first 2 videos to have a new view on this l
 
 single test
 
-![single test](./image/image3.jpg)
+<img src="./image/image3.jpg" width="300px" />
 
 multiple test
 
-![multiple test](./image/image4.jpg)
+<img src="./image/image4.jpg" width="300px" />
 
 :bulb: **something useful:** 
 
