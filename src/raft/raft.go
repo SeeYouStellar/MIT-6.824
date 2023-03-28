@@ -85,8 +85,9 @@ type Raft struct {
 	matchIndex       []int
 	logReplicatedNum []int
 	// in memory
-	commitIndex int
-	lastApplied int
+	commitIndex  int
+	lastApplied  int
+	applyMsgchan chan ApplyMsg
 }
 
 // heartbeat timeout
@@ -381,6 +382,17 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
 	rf.timer.Reset(rf.overTime)
 
+	for rf.lastApplied < args.LeaderCommit {
+		rf.lastApplied++
+		applyMsg := ApplyMsg{
+			CommandValid: true,
+			CommandIndex: rf.lastApplied,
+			Command:      rf.log[rf.lastApplied].Command,
+		}
+		rf.applyMsgchan <- applyMsg
+		rf.commitIndex = rf.lastApplied
+		//fmt.Printf("[	AppendEntries func-rf(%v)	] commitLog  \n", rf.me)
+	}
 	reply.Success = true
 
 }
@@ -420,7 +432,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	} else {
 		// log replica successfully
 		rf.nextIndex[server] = rf.nextIndex[server] + len(args.Entries) - 1
-		// rf.matchIndex[server] =
+		rf.matchIndex[server] = rf.nextIndex[server] - 1
 		// for i := 0; i < len(args.log); i++ {
 		// 	rf.logReplicatedNum[i+rf.nextIndex[server]] += 1
 		// 	if rf.logReplicatedNum[i+rf.nextIndex[server]] >= (len(rf.peers)/2)+1 {
@@ -609,7 +621,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.logReplicatedNum = make([]int, 0)
 	rf.commitIndex = 0
 	rf.lastApplied = 0
-
+	rf.applyMsgchan = make(chan ApplyMsg)
 	// initialize from state persisted before a crash
 	// rf.readPersist(persister.ReadRaftState())
 
