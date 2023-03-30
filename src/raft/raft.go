@@ -231,17 +231,17 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	if args.Term < rf.currentTerm {
 		return
 	} else if args.Term > rf.currentTerm {
-
-		if args.LastLogTerm >= 0 && (args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex)) {
-			// if candidate's term is bigger than follower/candidate, it will update term,get vote and reset.and if rf is a candidate, it should change state
+		// if candidate's term is bigger than follower/candidate, then
+		// judge if candidate's log is at least as up-to-date as follower/candidate's log
+		if args.LastLogTerm >= 0 && args.LastLogIndex >= 0 && lastRfLogIndex >= 0 && (args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex)) {
 			rf.state = STATE_FOLLOWER
 			rf.votedFor = args.CandidateId
 			rf.votedNum = 0
 			rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
 			rf.timer.Reset(rf.overTime)
 			rf.currentTerm = args.Term
-
 			reply.VoteGranted = true
+
 			// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
 		} else {
 			return
@@ -249,12 +249,16 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	} else {
 		//  if has the same term, it should judge whether rf has voted for another candidate
 		if rf.votedFor == -1 || rf.votedFor == args.CandidateId {
-			if args.LastLogTerm >= 0 && (args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex)) {
+			// if the follower has not vote for another candidate, then
+			// judge if candidate's log is at least as up-to-date as follower/candidate's log
+			if args.LastLogTerm >= 0 && args.LastLogIndex >= 0 && lastRfLogIndex >= 0 && (args.LastLogTerm > rf.log[lastRfLogIndex].Term || (args.LastLogTerm == rf.log[lastRfLogIndex].Term && args.LastLogIndex >= lastRfLogIndex)) {
+
 				rf.votedFor = args.CandidateId
+				rf.votedNum = 0
 				rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond // prevent follower from starting a election
 				rf.timer.Reset(rf.overTime)
-
 				reply.VoteGranted = true
+
 				// fmt.Printf("term %d, machine %d vote for machine %d\n", rf.currentTerm, rf.me, args.CandidateId)
 			} else {
 				return
