@@ -20,6 +20,7 @@ package raft
 import (
 	//	"bytes"
 
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -83,7 +84,7 @@ type Raft struct {
 	log              []LogEntry
 	nextIndex        []int
 	matchIndex       []int
-	logReplicatedNum []int
+	logReplicatedNum []int // store every log replicas count
 	// in memory
 	commitIndex  int
 	lastApplied  int
@@ -358,14 +359,17 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if args.PrevLogIndex >= 0 && rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
 		return
 	}
+
 	// judge if rf.log have conflict with the new entry
 	if len(rf.log) > args.PrevLogIndex+1 && rf.log[args.PrevLogIndex+1].Term != args.Entries[0].Term {
 
 		// delete the conflict entry and all that follow it
 		rf.log = rf.log[:args.PrevLogIndex+1]
 	}
+
 	// append args.entries
 	rf.log = append(rf.log, args.Entries...)
+
 	// update commitIndex
 	if args.LeaderCommit > rf.commitIndex {
 		if args.LeaderCommit > len(rf.log)-1 {
@@ -375,14 +379,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 	}
 
-	rf.state = STATE_FOLLOWER
-	rf.currentTerm = args.Term
-	rf.votedNum = 0
-	rf.votedFor = -1
-	rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
-	rf.timer.Reset(rf.overTime)
-
-	for rf.lastApplied < args.LeaderCommit {
+	// send applymsg
+	for rf.lastApplied < rf.commitIndex {
 		rf.lastApplied++
 		applyMsg := ApplyMsg{
 			CommandValid: true,
@@ -390,9 +388,15 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			Command:      rf.log[rf.lastApplied].Command,
 		}
 		rf.applyMsgchan <- applyMsg
-		rf.commitIndex = rf.lastApplied
 		//fmt.Printf("[	AppendEntries func-rf(%v)	] commitLog  \n", rf.me)
 	}
+
+	rf.state = STATE_FOLLOWER
+	rf.currentTerm = args.Term
+	rf.votedNum = 0
+	rf.votedFor = -1
+	rf.overTime = time.Duration(200+rand.Intn(250)) * time.Millisecond
+	rf.timer.Reset(rf.overTime)
 	reply.Success = true
 
 }
@@ -431,15 +435,27 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		}
 	} else {
 		// log replica successfully
-		rf.nextIndex[server] = rf.nextIndex[server] + len(args.Entries) - 1
+		// update leader's commitIndex
+		for i := 0; i < len(args.Entries); i++ {
+			rf.logReplicatedNum[i+rf.nextIndex[server]] += 1
+			if rf.logReplicatedNum[i+rf.nextIndex[server]] < (len(rf.peers)/2)+1 {
+				rf.commitIndex = i + rf.nextIndex[server] - 1
+				break
+			}
+		}
+		// update nextIndex[], matchIndex[]
+		rf.nextIndex[server] = rf.nextIndex[server] + len(args.Entries)
 		rf.matchIndex[server] = rf.nextIndex[server] - 1
-		// for i := 0; i < len(args.log); i++ {
-		// 	rf.logReplicatedNum[i+rf.nextIndex[server]] += 1
-		// 	if rf.logReplicatedNum[i+rf.nextIndex[server]] >= (len(rf.peers)/2)+1 {
-
-		// 	}
-		// }
-
+		// update leader's lastApplied
+		for rf.lastApplied < rf.commitIndex {
+			rf.lastApplied += 1
+			applyMsg := ApplyMsg{
+				CommandValid: true,
+				CommandIndex: rf.lastApplied,
+				Command:      rf.log[rf.lastApplied].Command,
+			}
+			rf.applyMsgchan <- applyMsg
+		}
 	}
 
 	return true
@@ -460,6 +476,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 // the leader.
 //
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
+	fmt.Printf("write a log to machine %d, machine %d is a %d\n", rf.me, rf.me, rf.state)
 	index := -1
 	term := -1
 	isLeader := true
@@ -475,8 +492,10 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	term = int(rf.currentTerm)
 	log := LogEntry{Term: rf.currentTerm, Command: command}
 	rf.log = append(rf.log, log)
+	rf.logReplicatedNum = append(rf.logReplicatedNum, 1)
 	index = len(rf.log) - 1
 
+	fmt.Printf("client write a command %v to machine %d \n", command, rf.me)
 	return index, term, isLeader
 }
 
@@ -548,6 +567,7 @@ func (rf *Raft) ticker() {
 					go rf.sendRequestVote(i, &args, &reply)
 				}
 			case STATE_LEADER:
+				fmt.Printf("machine %d become a leader\n", rf.me)
 				rf.timer.Reset(HeartBeatTimeout)
 				for j := 0; j < len(rf.peers); j++ {
 					rf.nextIndex[j] = len(rf.log)
