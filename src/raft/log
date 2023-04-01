@@ -1,0 +1,84 @@
+Test (2B): basic agreement ...
+term 0||machine 2||state:0
+server:2 [RequestVote]->server 1||return:true
+server:2 [RequestVote]->server 0||return:true
+server:2 [sendRequestVote]->server:1||voteNum:2||candidate->leader||term:1
+server:2 [sendRequestVote]->server:0||voteNum:3||candidate->leader||term:1
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+server:2 [AppendEntries]->server 0||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [AppendEntries]->server 0||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+server:2 [AppendEntries]->server 0||return:true||old len(log):1||new len(log):1||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+client write a command 100 to machine 2, machine 2 is 2
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):1||new len(log):2||commitIndex:0||lastApplied:0
+	server:2 [send applyMsg]||applyMsg.CommandIndex:1||applyMsg.Command:100
+server:2 [sendAppendEntries]->server:1||log replica successfully||nextIndex[1]:2||matchIndex[1]:1
+     nextIndex[0]:1||matchIndex[0]:0
+     nextIndex[1]:2||matchIndex[1]:1
+     nextIndex[2]:2||matchIndex[2]:1
+server:2 [AppendEntries]->server 0||return:true||old len(log):1||new len(log):2||commitIndex:0||lastApplied:0
+server:2 [sendAppendEntries]->server:0||log replica successfully||nextIndex[0]:2||matchIndex[0]:1
+     nextIndex[0]:2||matchIndex[0]:1
+     nextIndex[1]:2||matchIndex[1]:1
+     nextIndex[2]:2||matchIndex[2]:1
+term 1||machine 2||state:2
+	server:1 [send applyMsg]||applyMsg.CommandIndex:1||applyMsg.Command:100
+server:2 [AppendEntries]->server 1||return:true||old len(log):2||new len(log):2||commitIndex:1||lastApplied:1
+	server:0 [send applyMsg]||applyMsg.CommandIndex:1||applyMsg.Command:100
+server:2 [AppendEntries]->server 0||return:true||old len(log):2||new len(log):2||commitIndex:1||lastApplied:1
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+client write a command 200 to machine 2, machine 2 is 2
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):2||new len(log):3||commitIndex:1||lastApplied:1
+server:2 [AppendEntries]->server 0||return:true||old len(log):2||new len(log):3||commitIndex:1||lastApplied:1
+	server:2 [send applyMsg]||applyMsg.CommandIndex:2||applyMsg.Command:200
+server:2 [sendAppendEntries]->server:1||log replica successfully||nextIndex[1]:3||matchIndex[1]:2
+     nextIndex[0]:2||matchIndex[0]:1
+     nextIndex[1]:3||matchIndex[1]:2
+     nextIndex[2]:3||matchIndex[2]:2
+server:2 [sendAppendEntries]->server:0||log replica successfully||nextIndex[0]:3||matchIndex[0]:2
+     nextIndex[0]:3||matchIndex[0]:2
+     nextIndex[1]:3||matchIndex[1]:2
+     nextIndex[2]:3||matchIndex[2]:2
+term 1||machine 2||state:2
+	server:0 [send applyMsg]||applyMsg.CommandIndex:2||applyMsg.Command:200
+server:2 [AppendEntries]->server 0||return:true||old len(log):3||new len(log):3||commitIndex:2||lastApplied:2
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+	server:1 [send applyMsg]||applyMsg.CommandIndex:2||applyMsg.Command:200
+server:2 [AppendEntries]->server 1||return:true||old len(log):3||new len(log):3||commitIndex:2||lastApplied:2
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+client write a command 300 to machine 2, machine 2 is 2
+term 1||machine 2||state:2
+server:2 [AppendEntries]->server 0||return:true||old len(log):3||new len(log):4||commitIndex:2||lastApplied:2
+server:2 [AppendEntries]->server 1||return:true||old len(log):3||new len(log):4||commitIndex:2||lastApplied:2
+	server:2 [send applyMsg]||applyMsg.CommandIndex:3||applyMsg.Command:300
+server:2 [sendAppendEntries]->server:0||log replica successfully||nextIndex[0]:4||matchIndex[0]:3
+     nextIndex[0]:4||matchIndex[0]:3
+     nextIndex[1]:3||matchIndex[1]:2
+     nextIndex[2]:4||matchIndex[2]:3
+server:2 [sendAppendEntries]->server:1||log replica successfully||nextIndex[1]:4||matchIndex[1]:3
+     nextIndex[0]:4||matchIndex[0]:3
+     nextIndex[1]:4||matchIndex[1]:3
+     nextIndex[2]:4||matchIndex[2]:3
+term 1||machine 2||state:2
+	server:0 [send applyMsg]||applyMsg.CommandIndex:3||applyMsg.Command:300
+server:2 [AppendEntries]->server 0||return:true||old len(log):4||new len(log):4||commitIndex:3||lastApplied:3
+server:2 [sendAppendEntries]->server:0||heartbeat successfully||term:1
+	server:1 [send applyMsg]||applyMsg.CommandIndex:3||applyMsg.Command:300
+server:2 [AppendEntries]->server 1||return:true||old len(log):4||new len(log):4||commitIndex:3||lastApplied:3
+server:2 [sendAppendEntries]->server:1||heartbeat successfully||term:1
+  ... Passed --   0.3  3   20    5162    3
+PASS
+ok  	6.824/raft	0.319s
