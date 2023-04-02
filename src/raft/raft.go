@@ -19,7 +19,6 @@ package raft
 
 import (
 	//	"bytes"
-
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -91,7 +90,7 @@ type Raft struct {
 }
 
 // heartbeat timeout
-var HeartBeatTimeout = 10 * time.Millisecond
+var HeartBeatTimeout = 100 * time.Millisecond
 
 // three states
 const (
@@ -228,7 +227,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// operate state and term change
 
 	if args.Term < rf.currentTerm {
-		fmt.Printf("server:%d [RequestVote]->server %d||return:%t||args.Term < rf.currentTerm\n", args.CandidateId, rf.me, reply.VoteGranted)
+		fmt.Printf("server:%d [RequestVote]->server %d||return:%t||args.Term < rf.currentTerm||args.Term:%d||rf.currentTerm:%d\n", args.CandidateId, rf.me, reply.VoteGranted, args.Term, rf.currentTerm)
 		return
 	} else if args.Term > rf.currentTerm {
 		// if candidate's term is bigger than follower/candidate, then
@@ -338,7 +337,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	// rpc expiration: candidate call this func in args.term, and now it's term has been rf.currentTerm.
 	// wasting so many time in the line286-288 will cause this problem
 	if args.Term < rf.currentTerm {
-		fmt.Printf("server:%d [sendRequestVote]->server:%d||args.Term < rf.currentTerm||term:%d\n", rf.me, server, rf.currentTerm)
+		fmt.Printf("<outtime rpc>server:%d [sendRequestVote]->server:%d||args.Term < rf.currentTerm||args.term:%d||rf.currentTerm:%d\n", rf.me, server, args.Term, rf.currentTerm)
 		return false
 	}
 
@@ -352,7 +351,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 		}
 	} else {
 		if reply.Term > rf.currentTerm {
-
+			fmt.Printf("server:%d [sendRequestVote]->server:%d||reply.Term > rf.currentTerm||candidate->follower||reply.Term:%d||rf.currentTerm:%d\n", rf.me, server, reply.Term, rf.currentTerm)
 			// when convert to follower, this 6 line is must
 			rf.state = STATE_FOLLOWER
 			rf.currentTerm = reply.Term
@@ -360,10 +359,16 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 			rf.votedNum = 0
 			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
 			rf.timer.Reset(rf.overTime)
-			fmt.Printf("server:%d [sendRequestVote]->server:%d||reply.Term > rf.currentTerm||candidate->follower||term:%d\n", rf.me, server, rf.currentTerm)
+
 		} else {
 			// if candidate's log is not at least as up-to-date as , candidate should do nothing
 			fmt.Printf("server:%d [sendRequestVote]->server:%d||log is not up-to-date||term:%d\n", rf.me, server, rf.currentTerm)
+			rf.state = STATE_FOLLOWER
+			rf.currentTerm = reply.Term
+			rf.votedFor = -1
+			rf.votedNum = 0
+			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
+			rf.timer.Reset(rf.overTime)
 		}
 	}
 
@@ -379,32 +384,38 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	reply.Success = false
 	oldlenlog := len(rf.log)
 	if args.Term < rf.currentTerm {
-		fmt.Printf("server:%d [AppendEntries]->server %d||return:%t||args.Term < rf.currentTerm\n", args.LeaderId, rf.me, reply.Success)
+		fmt.Printf("<outtime rpc>server:%d [AppendEntries]->server %d||return:%t||args.Term < rf.currentTerm||args.Term:%d||rf.currentTerm:%d\n", args.LeaderId, rf.me, reply.Success, args.Term, rf.currentTerm)
 		return
 	}
 
-	if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
+	if (args.PrevLogIndex > 0 && args.PrevLogIndex < len(rf.log) && rf.log[args.PrevLogIndex].Term != args.PrevLogTerm) || args.PrevLogIndex >= len(rf.log) {
 		fmt.Printf("server:%d [AppendEntries]->server %d||return:%t||PreLogEntry inconsistent\n", args.LeaderId, rf.me, reply.Success)
-		rf.state = STATE_FOLLOWER
 		rf.currentTerm = args.Term
-		rf.votedNum = 0
-		rf.votedFor = -1
-		rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
-		rf.timer.Reset(rf.overTime)
 		return
 	}
 
 	// judge if rf.log have conflict with the new entry
-	for i := 1; i <= len(args.Entries); i++ {
+	//
+	i := 0
+	for i = 1; i <= len(args.Entries); i++ {
 		if len(rf.log) > args.PrevLogIndex+i && rf.log[args.PrevLogIndex+i].Term != args.Entries[i-1].Term {
 			// delete the conflict entry and all that follow it
-			rf.log = rf.log[:args.PrevLogIndex+1] // simplify i to 1
+			rf.log = rf.log[:args.PrevLogIndex+i] // simplify i to 1
+			tmp := args.Entries[i-1:]
+			rf.log = append(rf.log, tmp...)
+			break
+		} else if len(rf.log) == args.PrevLogIndex+i {
+			tmp := args.Entries[i-1:]
+			rf.log = append(rf.log, tmp...)
 			break
 		}
 	}
 
-	// append args.entries
-	rf.log = append(rf.log, args.Entries...)
+	fmt.Printf("server:%d||", rf.me)
+	for _, v := range rf.log {
+		fmt.Printf("%v ", v.Command)
+	}
+	fmt.Printf("\n")
 	// update commitIndex
 	if args.LeaderCommit > rf.commitIndex {
 		if args.LeaderCommit > len(rf.log)-1 {
@@ -424,7 +435,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 		rf.applyMsgchan <- applyMsg
 		fmt.Printf("	server:%d [send applyMsg]||applyMsg.CommandIndex:%d||applyMsg.Command:%v\n", rf.me, applyMsg.CommandIndex, applyMsg.Command)
-		//fmt.Printf("[	AppendEntries func-rf(%v)	] commitLog  \n", rf.me)
 	}
 
 	rf.state = STATE_FOLLOWER
@@ -438,7 +448,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
-
 	// the same as sendRequestVote
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	for ok == false {
@@ -452,12 +461,13 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	if args.Term < rf.currentTerm {
-		fmt.Printf("server:%d [sendAppendEntries]->server:%d||args.Term < rf.currentTerm||term:%d\n", rf.me, server, rf.currentTerm)
+		fmt.Printf("server:%d [sendAppendEntries]->server:%d||args.Term < rf.currentTerm||args.term:%d||rf.currentTerm:%d\n", rf.me, server, args.Term, rf.currentTerm)
 		return false
 	}
 
 	if reply.Success == false {
 		if reply.Term > rf.currentTerm {
+			fmt.Printf("server:%d [sendAppendEntries]->server:%d||reply.Term > rf.currentTerm||reply.term:%d||rf.currentTerm:%d\n", rf.me, server, reply.Term, rf.currentTerm)
 			rf.state = STATE_FOLLOWER
 			rf.currentTerm = reply.Term
 
@@ -465,7 +475,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 			rf.votedNum = 0
 			rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
 			rf.timer.Reset(rf.overTime)
-			fmt.Printf("server:%d [sendAppendEntries]->server:%d||reply.Term > rf.currentTerm||term:%d\n", rf.me, server, rf.currentTerm)
 
 		} else {
 			// log replica part: log inconsistence
@@ -475,30 +484,22 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	} else {
 		// log replica successfully
 		// update leader's commitIndex
-		if len(args.Entries) == 0 {
-			fmt.Printf("server:%d [sendAppendEntries]->server:%d||heartbeat successfully||term:%d\n", rf.me, server, rf.currentTerm)
-			return true
-		}
 		// update nextIndex[], matchIndex[]
 		rf.nextIndex[server] = rf.nextIndex[server] + len(args.Entries)
 		rf.matchIndex[server] = rf.nextIndex[server] - 1
 
 		// update leader's commitIndex
-		i := 0
-		for i = rf.commitIndex + 1; i < len(rf.log); i++ {
+		for i := len(rf.log) - 1; i >= rf.commitIndex+1; i-- {
 			cnt := 0
 			for j := range rf.peers {
 				if rf.matchIndex[j] >= i && rf.log[i].Term == rf.currentTerm {
 					cnt += 1
 				}
 			}
-			if cnt < (len(rf.peers)/2)+1 {
-				rf.commitIndex = i - 1
+			if cnt >= (len(rf.peers)/2)+1 {
+				rf.commitIndex = i
 				break
 			}
-		}
-		if i == len(rf.log) {
-			rf.commitIndex = len(rf.log) - 1
 		}
 		// update leader's lastApplied
 		for rf.lastApplied < rf.commitIndex {
@@ -510,11 +511,11 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 				Command:      rf.log[rf.lastApplied].Command,
 			}
 			rf.applyMsgchan <- applyMsg
-			fmt.Printf("	server:%d [send applyMsg]||applyMsg.CommandIndex:%d||applyMsg.Command:%v\n", rf.me, applyMsg.CommandIndex, applyMsg.Command)
+			fmt.Printf("		server:%d [send applyMsg]||applyMsg.CommandIndex:%d||applyMsg.Command:%v\n", rf.me, applyMsg.CommandIndex, applyMsg.Command)
 		}
 		fmt.Printf("server:%d [sendAppendEntries]->server:%d||log replica successfully||nextIndex[%d]:%d||matchIndex[%d]:%d\n", rf.me, server, server, rf.nextIndex[server], server, rf.matchIndex[server])
 
-		for i = 0; i < len(rf.peers); i++ {
+		for i := 0; i < len(rf.peers); i++ {
 			fmt.Printf("     nextIndex[%d]:%d||matchIndex[%d]:%d\n", i, rf.nextIndex[i], i, rf.matchIndex[i])
 		}
 
@@ -558,6 +559,12 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	rf.nextIndex[rf.me] = index + 1
 
 	fmt.Printf("client write a command %v to machine %d, machine %d is %d\n", command, rf.me, rf.me, rf.state)
+
+	fmt.Printf("server:%d||", rf.me)
+	for _, v := range rf.log {
+		fmt.Printf("%v ", v.Command)
+	}
+	fmt.Printf("\n")
 	return index, term, isLeader
 }
 
@@ -596,7 +603,7 @@ func (rf *Raft) ticker() {
 		select {
 		case <-rf.timer.C:
 			rf.mu.Lock()
-			fmt.Printf("term %d||machine %d||state:%d\n", rf.currentTerm, rf.me, rf.state)
+			// fmt.Printf("term %d||machine %d||state:%d\n", rf.currentTerm, rf.me, rf.state)
 			switch rf.state {
 			case STATE_FOLLOWER:
 				rf.state = STATE_CANDIDATE
@@ -607,7 +614,12 @@ func (rf *Raft) ticker() {
 				rf.overTime = time.Duration(150+rand.Intn(200)) * time.Millisecond
 				rf.timer.Reset(rf.overTime)
 				for j := 0; j < len(rf.peers); j++ {
-					rf.nextIndex[j] = 1
+					if j == rf.me {
+						rf.nextIndex[j] = len(rf.log)
+						rf.matchIndex[j] = len(rf.log) - 1
+						continue
+					}
+					rf.nextIndex[j] = len(rf.log)
 					rf.matchIndex[j] = 0
 				}
 				rf.votedFor = rf.me
@@ -647,18 +659,13 @@ func (rf *Raft) ticker() {
 						Entries:      nil,
 						LeaderCommit: rf.commitIndex,
 					}
-
+					args.Entries = rf.log[rf.nextIndex[j]:]
 					// scan the nextIndex
-					//0 1
-					//next[]=1
-					if rf.nextIndex[j] < len(rf.log) {
-						args.Entries = rf.log[rf.nextIndex[j]:]
-						if rf.nextIndex[j] > 1 {
-							args.PrevLogIndex = rf.nextIndex[j] - 1
-							args.PrevLogTerm = rf.log[args.PrevLogIndex].Term
-						}
+					if rf.nextIndex[j] > 1 && rf.nextIndex[j] <= len(rf.log) {
+						args.PrevLogIndex = rf.nextIndex[j] - 1
+						args.PrevLogTerm = rf.log[args.PrevLogIndex].Term
 					}
-					// fmt.Printf("machine %d send appendEntries to machine %d, len(args.Entries):%d, len(rf.log):%d\n", rf.me, j, len(args.Entries), len(rf.log))
+
 					go rf.sendAppendEntries(j, &args, &reply)
 				}
 

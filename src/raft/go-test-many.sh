@@ -36,6 +36,9 @@
 #
 # By now, you know everything that happens below.
 # If you still want to read the code, go ahead.
+rm -rf *.log
+rm -rf *.err
+rm -rf tester
 
 if [ $# -eq 1 ] && [ "$1" = "--help" ]; then
 	echo "Usage: $0 [RUNS=100] [PARALLELISM=#cpus] [TESTPATTERN='']"
@@ -148,9 +151,9 @@ for pid in "${waits[@]}"; do
 done
 
 
-rm -rf *.log
-rm -rf *.err
-rm -rf tester
+# rm -rf *.log
+# rm -rf *.err
+# rm -rf tester
 
 
 if ((failed>0)); then

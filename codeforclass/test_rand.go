@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 func main() {
-	fmt.Printf("use diff seed--------------\n")
-	for i := 0; i < 5; i++ {
-		rand.Seed(time.Now().UnixNano())
-		num := rand.Intn(10)
-		fmt.Printf("%d ", num)
-	}
+	// fmt.Printf("use diff seed--------------\n")
+	// for i := 0; i < 5; i++ {
+	// 	rand.Seed(time.Now().UnixNano())
+	// 	num := rand.Intn(10)
+	// 	fmt.Printf("%d ", num)
+	// }
 	// 5 7 2 0 4
 	// 6 2 7 5 2
 	// 4 4 0 0 7
@@ -29,6 +27,9 @@ func main() {
 	// 1 7 7 9 1
 	// get the same output when run the file
 
+	a := make([]int, 5)
+	a = a[5:]
+	fmt.Printf("len(a):%d", len(a))
 	fmt.Printf("\n")
 
 }
