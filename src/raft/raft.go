@@ -1,6 +1,6 @@
 package raft
 
-//
+// export PATH=$PATH:/usr/local/go/bin
 // this is an outline of the API that raft must expose to
 // the service (or tester). see comments below for
 // each of these functions for more details.
