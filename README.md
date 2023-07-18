@@ -7,10 +7,6 @@
 
 ## lab1: MapReduce 
 
-:calendar: 2023/2/25 begin 
-
-:golf: 2023/3/5 finished
-
 ::clipboard: test 
 
 single test
@@ -29,10 +25,7 @@ directly. You only need to watch the first 2 videos to have a new view on this l
 
 ## lab2: Raft
 
-### lab2A-LeaderElection
-:calendar: 2023/3/15 lab 2A begin
-
-:golf: 2023/3/22 lab 2A finished 
+### lab2A leader election
 
 ::clipboard: test 
 
@@ -47,9 +40,31 @@ multiple test
 :bulb: **something useful:** 
 
 1. [go-test-many.sh](https://gist.github.com/jonhoo/f686cacb4b9fe716d5aa), this file is used for many times test, which is run as ```bash go-test-many.sh [Times] [Parallel test number] [test subset]```
+2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
+ 
+### lab2B log replica
+single test
 
+<img src="./image/image5.jpg" width="300px" />
 
-:golf: 2023/3/23 lab2B begin
+multiple test
+
+<img src="./image/image4.jpg" width="300px" />
+
+:bulb: **something useful:** 
+
+1. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
+
+:bulb: **TODO:**
+
+1. TestBackup2B takes too much time. The time given by the course website is 17.2s. The granularity of the lock needs to be improved.  
+2. I use time.Timer to implement ticker thread，the course website recommand time.Sleep(). I will build other **branch named Lab2A** to complete the Lab2A soon.
+3. The implement logic of RequestVote RPC and AppendEntries RPC maybe not best, should rebuild soon.
+
+### lab2C Persistence
+
+### lab2D log compaction
+
 
 ## lab3: KV Raft
 
