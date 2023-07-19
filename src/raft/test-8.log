@@ -1,40 +1,14 @@
-=== RUN   TestBasicAgree2B
-Test (2B): basic agreement ...
-  ... Passed --   0.9  3   16    4290    3
---- PASS: TestBasicAgree2B (0.88s)
-=== RUN   TestRPCBytes2B
-Test (2B): RPC byte count ...
-  ... Passed --   2.4  3   46  113070   11
---- PASS: TestRPCBytes2B (2.38s)
-=== RUN   TestFailAgree2B
-Test (2B): agreement after follower reconnects ...
-!!!!!!disconnect server:1
-!!!!!!connect server:1
-  ... Passed --   6.0  3  137   35927    8
---- PASS: TestFailAgree2B (5.99s)
-=== RUN   TestFailNoAgree2B
-Test (2B): no agreement if too many followers disconnect ...
-  ... Passed --   3.7  5  241   51668    4
---- PASS: TestFailNoAgree2B (3.67s)
-=== RUN   TestConcurrentStarts2B
-Test (2B): concurrent Start()s ...
-  ... Passed --   0.9  3   16    4362    6
---- PASS: TestConcurrentStarts2B (0.86s)
-=== RUN   TestRejoin2B
-Test (2B): rejoin of partitioned leader ...
-  ... Passed --   4.4  3  176   43382    4
---- PASS: TestRejoin2B (4.40s)
-=== RUN   TestBackup2B
-Test (2B): leader backs up quickly over incorrect follower logs ...
-!!!!!!!!!!connect server 0
-!!!!!!!!!!connect server 1
-!!!!!!!!!!connect server 2
-!!!!!!!!!!connect server 3
-!!!!!!!!!!connect server 4
-  ... Passed --  34.1  5 10017 7046094  104
---- PASS: TestBackup2B (34.11s)
-=== RUN   TestCount2B
-Test (2B): RPC counts aren't too high ...
-  ... Passed --   2.4  3   42   11854   12
---- PASS: TestCount2B (2.37s)
-PASS
+=== RUN   TestPersist12C
+Test (2C): basic persistence ...
+  ... Passed --   3.8  3   93   23357    6
+--- PASS: TestPersist12C (3.79s)
+=== RUN   TestPersist22C
+Test (2C): more persistence ...
+  ... Passed --  16.2  5 1126  246980   16
+--- PASS: TestPersist22C (16.23s)
+=== RUN   TestPersist32C
+Test (2C): partitioned leader and one follower crash, leader restarts ...
+  ... Passed --   1.9  3   39    9835    4
+--- PASS: TestPersist32C (1.92s)
+=== RUN   TestFigure82C
+Test (2C): Figure 8 ...

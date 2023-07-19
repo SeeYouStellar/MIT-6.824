@@ -493,6 +493,7 @@ func TestRejoin2B(t *testing.T) {
 }
 
 func TestBackup2B(t *testing.T) {
+	// 运行/usr/local/go/bin/go test -timeout 30s -run ^TestBackup2B$ 6.824/raft 会超时，需要将30s改为40s
 	servers := 5
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()

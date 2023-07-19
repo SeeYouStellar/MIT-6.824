@@ -54,6 +54,8 @@ multiple test
 :bulb: **something useful:** 
 
 1. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
+2. [Students' Guide to Raft](https://thesquareplanet.com/blog/students-guide-to-raft/)
+3. [Q&A about lab](https://thesquareplanet.com/blog/raft-qa/)It is recommended to read this Q&A after read the Students' Guide to Raft and finish the experiment. If you can answer all the questions, then you fully understand raft.In most cases, you will find that many of the questions are puzzles that you will also encounter when reading the paper.
 
 :bulb: **TODO:**
 
@@ -62,6 +64,14 @@ multiple test
 3. The implement logic of RequestVote RPC and AppendEntries RPC maybe not best, should rebuild soon.
 
 ### lab2C Persistence
+
+single test
+
+<img src="./image/image6.jpg" width="300px" />
+
+multiple test
+
+
 
 ### lab2D log compaction
 
