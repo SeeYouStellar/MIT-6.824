@@ -1,4 +1,631 @@
 Test (2C): Figure 8 ...
-  ... Passed --  31.3  5 1101  223449   21
+term 1 server 1 become leader
+term 1 leader 1 nextIndex[0]: 1  matchIndex[0]: 0
+[]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[2]: 1  matchIndex[2]: 0
+[]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[3]: 1  matchIndex[3]: 0
+[]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[4]: 1  matchIndex[4]: 0
+[]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+client write log 5110640201917785635 (index 1) to leader 1
+server 4 AppendEntries true commitIndex:0 
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0}]
+server 4 log:
+[{<nil> 0 0}]
+server 3 AppendEntries true commitIndex:0 
+server 3 log:
+[{<nil> 0 0}]
+server 0 AppendEntries true commitIndex:0 
+leader 1 sendAppendEntries -> server 2 trueupdate nextIndex[2]=1
+update matchIndex[2]=0
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 4 trueupdate nextIndex[4]=1
+update matchIndex[4]=0
+update leader CommitIndex=0
+leader log:
+server 0 log:
+[{<nil> 0 0}]
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 3 trueupdate nextIndex[3]=1
+update matchIndex[3]=0
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 0 trueupdate nextIndex[0]=1
+update matchIndex[0]=0
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+term 1 leader 1 nextIndex[0]: 1  matchIndex[0]: 0
+[{5110640201917785635 1 1}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[2]: 1  matchIndex[2]: 0
+[{5110640201917785635 1 1}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[3]: 1  matchIndex[3]: 0
+[{5110640201917785635 1 1}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+term 1 leader 1 nextIndex[4]: 1  matchIndex[4]: 0
+[{5110640201917785635 1 1}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 0  PrevLogTerm: 0 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 3 AppendEntries true commitIndex:0 
+server 3 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=1
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 3 trueupdate nextIndex[3]=2
+update matchIndex[3]=1
+update leader CommitIndex=1
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 2 trueupdate nextIndex[2]=2
+update matchIndex[2]=1
+update leader CommitIndex=1
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+client write log 1976822280217570491 (index 2) to leader 1
+!!!!leader 1 crashed
+term 1 leader 1 nextIndex[0]: 2  matchIndex[0]: 1
+[{1976822280217570491 1 2}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 1 
+term 1 leader 1 nextIndex[2]: 2  matchIndex[2]: 1
+[{1976822280217570491 1 2}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 1 
+term 1 leader 1 nextIndex[3]: 2  matchIndex[3]: 1
+[{1976822280217570491 1 2}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 1 
+term 1 leader 1 nextIndex[4]: 2  matchIndex[4]: 1
+[{1976822280217570491 1 2}]
+term 1 leader 1 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 1 
+term 2 server 3 become leader
+term 2 leader 3 nextIndex[0]: 2  matchIndex[0]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[2]: 2  matchIndex[2]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[4]: 2  matchIndex[4]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 2 trueupdate nextIndex[2]=2
+update matchIndex[2]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 3 false nextIndex[3] 2->1
+term 2 leader 3 nextIndex[0]: 2  matchIndex[0]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[2]: 2  matchIndex[2]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[4]: 2  matchIndex[4]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 2 trueupdate nextIndex[2]=2
+update matchIndex[2]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+term 2 leader 3 nextIndex[0]: 2  matchIndex[0]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[2]: 2  matchIndex[2]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[4]: 2  matchIndex[4]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 0 AppendEntries true commitIndex:0 
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 2 trueupdate nextIndex[2]=2
+update matchIndex[2]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+term 2 leader 3 nextIndex[0]: 2  matchIndex[0]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[2]: 2  matchIndex[2]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[4]: 2  matchIndex[4]: 1
+[]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 3 sendAppendEntries -> server 2 trueupdate nextIndex[2]=2
+update matchIndex[2]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 1 sendAppendEntries -> server 2 false nextIndex[2] 2->1
+client write log 6739844547669428929 (index 2) to leader 3
+term 2 leader 3 nextIndex[0]: 2  matchIndex[0]: 1
+[{6739844547669428929 2 2}]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[1]: 2  matchIndex[1]: 0
+[{6739844547669428929 2 2}]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[2]: 2  matchIndex[2]: 1
+[{6739844547669428929 2 2}]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 2 leader 3 nextIndex[4]: 2  matchIndex[4]: 1
+[{6739844547669428929 2 2}]
+term 2 leader 3 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+!!!!leader 3 crashed
+term 3 server 2 become leader
+term 3 leader 2 nextIndex[0]: 2  matchIndex[0]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[3]: 2  matchIndex[3]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[4]: 2  matchIndex[4]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 2 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 2 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+term 3 leader 2 nextIndex[0]: 2  matchIndex[0]: 1
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[1]: 2  matchIndex[1]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[3]: 2  matchIndex[3]: 0
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[4]: 2  matchIndex[4]: 1
+[]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 2 sendAppendEntries -> server 4 trueupdate nextIndex[4]=2
+update matchIndex[4]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+leader 2 sendAppendEntries -> server 0 trueupdate nextIndex[0]=2
+update matchIndex[0]=1
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1}]
+client write log 2295304395175282922 (index 2) to leader 2
+!!!!leader 2 crashed
+!!!!connect server 2
+term 3 leader 2 nextIndex[0]: 2  matchIndex[0]: 1
+[{2295304395175282922 3 2}]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[1]: 2  matchIndex[1]: 0
+[{2295304395175282922 3 2}]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[3]: 2  matchIndex[3]: 0
+[{2295304395175282922 3 2}]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 3 leader 2 nextIndex[4]: 2  matchIndex[4]: 1
+[{2295304395175282922 3 2}]
+term 3 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+leader 3 sendAppendEntries -> server 1 false nextIndex[1] 2->1
+term 4 server 2 become leader
+term 4 leader 2 nextIndex[0]: 3  matchIndex[0]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[1]: 3  matchIndex[1]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[3]: 3  matchIndex[3]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[4]: 3  matchIndex[4]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+server 4 AppendEntries false prev日志不匹配
+server 0 AppendEntries false prev日志不匹配
+leader 2 sendAppendEntries -> server 4 false nextIndex[4] 3->2
+leader 2 sendAppendEntries -> server 0 false nextIndex[0] 3->2
+leader 1 sendAppendEntries -> server 4 false nextIndex[4] 2->1
+term 4 leader 2 nextIndex[0]: 2  matchIndex[0]: 0
+[{2295304395175282922 3 2}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 4 leader 2 nextIndex[1]: 3  matchIndex[1]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[3]: 3  matchIndex[3]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[4]: 2  matchIndex[4]: 0
+[{2295304395175282922 3 2}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+leader 2 sendAppendEntries -> server 4 trueupdate nextIndex[4]=3
+update matchIndex[4]=2
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+leader 2 sendAppendEntries -> server 0 trueupdate nextIndex[0]=3
+update matchIndex[0]=2
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+term 4 leader 2 nextIndex[0]: 3  matchIndex[0]: 2
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[1]: 3  matchIndex[1]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[3]: 3  matchIndex[3]: 0
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[4]: 3  matchIndex[4]: 2
+[]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+leader 2 sendAppendEntries -> server 4 trueupdate nextIndex[4]=3
+update matchIndex[4]=2
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+leader 2 sendAppendEntries -> server 0 trueupdate nextIndex[0]=3
+update matchIndex[0]=2
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+client write log 5961332887371063190 (index 3) to leader 2
+!!!!leader 2 crashed
+term 4 leader 2 nextIndex[0]: 3  matchIndex[0]: 2
+[{5961332887371063190 4 3}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[1]: 3  matchIndex[1]: 0
+[{5961332887371063190 4 3}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[3]: 3  matchIndex[3]: 0
+[{5961332887371063190 4 3}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 4 leader 2 nextIndex[4]: 3  matchIndex[4]: 2
+[{5961332887371063190 4 3}]
+term 4 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+!!!!connect server 3
+term 5 server 0 become leader
+term 5 leader 0 nextIndex[1]: 3  matchIndex[1]: 0
+[]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 0 nextIndex[2]: 3  matchIndex[2]: 0
+[]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 0 nextIndex[3]: 3  matchIndex[3]: 0
+[]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 0 nextIndex[4]: 3  matchIndex[4]: 0
+[]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+leader 0 sendAppendEntries -> server 4 trueupdate nextIndex[4]=3
+update matchIndex[4]=2
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2}]
+server 3 AppendEntries false prev日志不匹配
+leader 0 sendAppendEntries -> server 3 false nextIndex[3] 3->2
+client write log 1225544788731939964 (index 3) to leader 0
+!!!!leader 0 crashed
+!!!!connect server 2
+term 5 leader 0 nextIndex[1]: 3  matchIndex[1]: 0
+[{1225544788731939964 5 3}]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 0 nextIndex[2]: 3  matchIndex[2]: 0
+[{1225544788731939964 5 3}]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 0 nextIndex[3]: 2  matchIndex[3]: 0
+[{2295304395175282922 3 2} {1225544788731939964 5 3}]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 5 leader 0 nextIndex[4]: 3  matchIndex[4]: 2
+[{1225544788731939964 5 3}]
+term 5 leader 0 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 server 2 become leader
+term 5 leader 2 nextIndex[0]: 4  matchIndex[0]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[1]: 4  matchIndex[1]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[3]: 4  matchIndex[3]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[4]: 4  matchIndex[4]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+server 3 AppendEntries false prev日志不匹配
+server 4 AppendEntries false prev日志不匹配
+leader 2 sendAppendEntries -> server 3 false nextIndex[3] 4->3
+leader 2 sendAppendEntries -> server 4 false nextIndex[4] 4->3
+term 5 leader 2 nextIndex[0]: 4  matchIndex[0]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[1]: 4  matchIndex[1]: 0
+[]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[3]: 3  matchIndex[3]: 0
+[{5961332887371063190 4 3}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 5 leader 2 nextIndex[4]: 3  matchIndex[4]: 0
+[{5961332887371063190 4 3}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+server 4 AppendEntries true commitIndex:0 
+server 4 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3}]
+leader 2 sendAppendEntries -> server 4 trueupdate nextIndex[4]=4
+update matchIndex[4]=3
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3}]
+server 3 AppendEntries false prev日志不匹配
+leader 2 sendAppendEntries -> server 3 false nextIndex[3] 3->2
+client write log 7443703727004229244 (index 4) to leader 2
+!!!!leader 2 crashed
+!!!!connect server 1
+term 5 leader 2 nextIndex[0]: 4  matchIndex[0]: 0
+[{7443703727004229244 5 4}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[1]: 4  matchIndex[1]: 0
+[{7443703727004229244 5 4}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 5 leader 2 nextIndex[3]: 2  matchIndex[3]: 0
+[{2295304395175282922 3 2} {5961332887371063190 4 3} {7443703727004229244 5 4}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 0 
+term 5 leader 2 nextIndex[4]: 4  matchIndex[4]: 3
+[{7443703727004229244 5 4}]
+term 5 leader 2 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+leader 1 sendAppendEntries -> server 0 false nextIndex[0] 2->1
+!!!!connect server 0
+!!!!connect server 2
+term 7 server 4 become leader
+term 7 leader 4 nextIndex[0]: 4  matchIndex[0]: 0
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 7 leader 4 nextIndex[1]: 4  matchIndex[1]: 0
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 7 leader 4 nextIndex[2]: 4  matchIndex[2]: 0
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 7 leader 4 nextIndex[3]: 4  matchIndex[3]: 0
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+server 0 AppendEntries false prev日志不匹配
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+server 1 AppendEntries false prev日志不匹配
+leader 4 sendAppendEntries -> server 0 false nextIndex[0] 4->3
+server 3 AppendEntries false prev日志不匹配
+leader 4 sendAppendEntries -> server 1 false nextIndex[1] 4->3
+leader 4 sendAppendEntries -> server 3 false nextIndex[3] 4->3
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {7443703727004229244 5 4}]
+leader 4 sendAppendEntries -> server 2 trueupdate nextIndex[2]=4
+update matchIndex[2]=3
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3}]
+client write log 4906941646865138940 (index 4) to leader 4
+leader 2 sendAppendEntries -> server 1 false nextIndex[1] 4->3
+term 7 leader 4 nextIndex[0]: 3  matchIndex[0]: 0
+[{5961332887371063190 4 3} {4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 7 leader 4 nextIndex[1]: 3  matchIndex[1]: 0
+[{5961332887371063190 4 3} {4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+term 7 leader 4 nextIndex[2]: 4  matchIndex[2]: 3
+[{4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 3  PrevLogTerm: 4 leaderCommit: 0 
+term 7 leader 4 nextIndex[3]: 3  matchIndex[3]: 0
+[{5961332887371063190 4 3} {4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 2  PrevLogTerm: 3 leaderCommit: 0 
+server 1 AppendEntries false prev日志不匹配
+server 0 AppendEntries true commitIndex:0 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+server 3 AppendEntries false prev日志不匹配
+leader 4 sendAppendEntries -> server 1 false nextIndex[1] 3->2
+server 2 AppendEntries true commitIndex:0 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 0 trueupdate nextIndex[0]=5
+update matchIndex[0]=4
+update leader CommitIndex=0
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 2 trueupdate nextIndex[2]=5
+update matchIndex[2]=4
+update leader CommitIndex=4
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 3 false nextIndex[3] 3->2
+term 7 leader 4 nextIndex[0]: 5  matchIndex[0]: 4
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 4  PrevLogTerm: 7 leaderCommit: 4 
+term 7 leader 4 nextIndex[1]: 2  matchIndex[1]: 0
+[{2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 4 
+term 7 leader 4 nextIndex[2]: 5  matchIndex[2]: 4
+[]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 4  PrevLogTerm: 7 leaderCommit: 4 
+term 7 leader 4 nextIndex[3]: 2  matchIndex[3]: 0
+[{2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+term 7 leader 4 sendAppendEntries PrevLogIndex: 1  PrevLogTerm: 1 leaderCommit: 4 
+server 3 AppendEntries true commitIndex:4 
+server 3 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 3 trueupdate nextIndex[3]=5
+update matchIndex[3]=4
+update leader CommitIndex=4
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+server 1 AppendEntries true commitIndex:4 
+server 1 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 1 trueupdate nextIndex[1]=5
+update matchIndex[1]=4
+update leader CommitIndex=4
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+server 0 AppendEntries true commitIndex:4 
+server 0 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+server 2 AppendEntries true commitIndex:4 
+server 2 log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 0 trueupdate nextIndex[0]=5
+update matchIndex[0]=4
+update leader CommitIndex=4
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+leader 4 sendAppendEntries -> server 2 trueupdate nextIndex[2]=5
+update matchIndex[2]=4
+update leader CommitIndex=4
+leader log:
+[{<nil> 0 0} {5110640201917785635 1 1} {2295304395175282922 3 2} {5961332887371063190 4 3} {4906941646865138940 7 4}]
+  ... Passed --   3.7  5  124   28596    4
 PASS
-ok  	6.824/raft	31.292s
+ok  	6.824/raft	3.678s

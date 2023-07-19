@@ -1,2 +1,0 @@
-1. 在term=2，某个serve当断连，后来server又连上时，但此时因为没有更改过leader，所以term没变
-他们在electiontimeout内没收到心跳那么自动将term改为了3然后开始选举，此时
