@@ -70,14 +70,22 @@ single test
 <img src="./image/image6.jpg" width="300px" />
 
 multiple test
+
 <img src="./image/image8.jpg" width="300px" />
-![Alt text](image.png)
+
 :bulb: **something useful:** 
 1. 2C的测试代码中cfg.crash(server)表示的是使server宕机，而cfg.unconnect(server)表示的是形成网络分区，将该server与其他server断开网络连接，crash表示server内存中数据丢失需要使用持久化恢复，而unconnect后数据不会丢失。
 2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
 
 ### lab2D log compaction
 
+single test
+
+<img src="./image/image9.jpg" width="300px" />
+
+multiple test
+
+<img src="./image/image8.jpg" width="300px" />
 
 ## lab3: KV Raft
 

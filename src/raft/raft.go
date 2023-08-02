@@ -19,7 +19,6 @@ package raft
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -175,14 +174,20 @@ func (rf *Raft) readPersist(data []byte) {
 	var lastIncludedIndex int
 	var lastIncludedTerm int
 	if d.Decode(&currentTerm) != nil || d.Decode(&voteFor) != nil || d.Decode(&logs) != nil || d.Decode(&lastIncludedIndex) != nil || d.Decode(&lastIncludedTerm) != nil {
-		fmt.Printf("获取persist信息失败\n")
+		// fmt.Printf("获取persist信息失败\n")
 	} else {
 		rf.currentTerm = currentTerm
 		rf.voteFor = voteFor
 		rf.logs = logs
 		rf.lastIncludedIndex = lastIncludedIndex
 		rf.lastIncludedTerm = lastIncludedTerm
-		// fmt.Printf("获取persist信息成功 server %d currentTerm %d voteFor %d logs ", rf.me, rf.currentTerm, rf.voteFor)
+		if rf.commitIndex < rf.lastIncludedIndex {
+			rf.commitIndex = rf.lastIncludedIndex
+		}
+		if rf.lastApplied < rf.lastIncludedIndex {
+			rf.lastApplied = rf.lastIncludedIndex
+		}
+		// // fmt.Printf("获取persist信息成功 server %d currentTerm %d voteFor %d logs ", rf.me, rf.currentTerm, rf.voteFor)
 		// fmt.Println(logs)
 		//注意:获取的过程中server变为leader然后client写了日志，此时日志就与获取时的不一样了，这里输出的只是持久化的日志
 	}
@@ -517,7 +522,6 @@ type AppendEntriesArgs struct {
 	PrevLogTerm  int
 	LeaderCommit int
 	Entries      []LogEntry
-	Flag         int
 }
 
 type AppendEntriesReply struct {
@@ -531,8 +535,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
-	// fmt.Printf("flag %d PreLogIndex: %d LeaderCommit: %d\n", args.Flag, args.PrevLogIndex, args.LeaderCommit)
-	// fmt.Println(args.Entries)
+	// // fmt.Printf("flag %d PreLogIndex: %d LeaderCommit: %d\n", args.Flag, args.PrevLogIndex, args.LeaderCommit)
+	// // fmt.Println(args.Entries)
 	reply.Term = rf.currentTerm
 	reply.Success = false
 	LastIndex, _ := rf.LastLog()
@@ -641,8 +645,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
-	// fmt.Printf("flag %d sendAppendEntries\n", args.Flag)
-	// fmt.Println(args.Entries)
+	// // fmt.Printf("flag %d sendAppendEntries\n", args.Flag)
+	// // fmt.Println(args.Entries)
 	rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	// 防止由于网络问题导致的rpc请求失败
 	// for !ok {
@@ -705,7 +709,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	} else {
 		rf.matchIndex[server] = args.PrevLogIndex + len(args.Entries)
 		rf.nextIndex[server] = rf.matchIndex[server] + 1
-		// fmt.Printf("leader %d sendAppendEntries -> server %d true", rf.me, server)
+		// fmt.Printf("leader %d sendAppendEntries -> server %d true\n", rf.me, server)
 		// fmt.Printf("update nextIndex[%d]=%d\n", server, rf.nextIndex[server])
 		// fmt.Printf("update matchIndex[%d]=%d\n", server, rf.matchIndex[server])
 		// 更新leader的commitIndex
@@ -791,6 +795,9 @@ func (rf *Raft) killed() bool {
 func (rf *Raft) ApplyLogs() {
 	for !rf.killed() {
 		rf.mu.Lock()
+		if rf.lastApplied < rf.lastIncludedIndex {
+			rf.lastApplied = rf.lastIncludedIndex
+		}
 		for rf.lastApplied < rf.commitIndex {
 
 			rf.lastApplied += 1
@@ -858,7 +865,6 @@ func (rf *Raft) ticker() {
 					if rf.nextIndex[j] > rf.lastIncludedIndex {
 						// 发日志增量
 						LastIndex, LastTerm := rf.LastLog()
-						flag := rand.Intn(100000)
 						reply := AppendEntriesReply{}
 						args := AppendEntriesArgs{
 							Term:         rf.currentTerm,
@@ -867,7 +873,6 @@ func (rf *Raft) ticker() {
 							PrevLogTerm:  0,
 							Entries:      nil,
 							LeaderCommit: rf.commitIndex,
-							Flag:         flag,
 						}
 						if len(rf.logs) > 1 {
 							// 心跳+日志增量
