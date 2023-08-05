@@ -344,19 +344,6 @@ func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply
 	// fmt.Printf("nextIndex[%d] %d matchIndex[%d] %d \n", server, rf.nextIndex[server], server, rf.matchIndex[server])
 	// fmt.Printf("------------------------------------------------------------------------\n")
 	// 不需要调整commitIndex，所有快照里的日志都已经提交了
-	// LastIndex, _ := rf.LastLog()
-	// for i := LastIndex; i >= rf.commitIndex+1; i-- {
-	// 	cnt := 0
-	// 	for j := range rf.peers {
-	// 		if rf.matchIndex[j] >= i && rf.logs[i-rf.lastIncludedIndex].Term == rf.currentTerm {
-	// 			cnt += 1
-	// 		}
-	// 	}
-	// 	if cnt >= (len(rf.peers)/2)+1 {
-	// 		rf.commitIndex = i
-	// 		break
-	// 	}
-	// }
 	return ok
 }
 
@@ -971,6 +958,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.lastIncludedIndex = 0
 	rf.lastIncludedTerm = 0
 	// initialize from state persisted before a crash
+	// raft实例重启时只需要读取raft的状态就可以，不需要读取snapshot，snapshot是state machine层读取的
+	// 重启时raft实例中没有snapshot也没有关系，只要下一次state machine层再次进行生成快照就可以将最新的快照信息存于raft实例中
 	rf.readPersist(persister.ReadRaftState())
 
 	// start ticker goroutine to start elections

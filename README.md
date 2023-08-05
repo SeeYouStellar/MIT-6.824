@@ -1,4 +1,8 @@
 # MIT6.824
+
+![language](https://img.shields.io/badge/language-Golang-yellow.svg)
+![source](https://img.shields.io/badge/source-MITpdos-yellow.svg) 
+
 ## References :link:
 
 1. [Schedule of Lectures](https://pdos.csail.mit.edu/6.824/schedule.html)
@@ -74,6 +78,7 @@ multiple test
 <img src="./image/image8.jpg" width="300px" />
 
 :bulb: **something useful:** 
+
 1. 2C的测试代码中cfg.crash(server)表示的是使server宕机，而cfg.unconnect(server)表示的是形成网络分区，将该server与其他server断开网络连接，crash表示server内存中数据丢失需要使用持久化恢复，而unconnect后数据不会丢失。
 2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
 
@@ -85,7 +90,12 @@ single test
 
 multiple test
 
-<img src="./image/image8.jpg" width="300px" />
+<img src="./image/image11.jpg" width="300px" />
+
+:bulb: **something useful:** 
+
+1. (一个完整的基于raft的应用)[https://pdos.csail.mit.edu/6.824/notes/raft_diagram.pdf]，描述了上层应用层、状态机层、raft实例层、持久化层之间的相互联系，方便理解快照的作用
+2. :page_facing_up: [my experiment note](https://github.com/SeeYouStellar/StudyAllTheTime/tree/master/MIT6.824)
 
 ## lab3: KV Raft
 
