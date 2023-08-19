@@ -1,0 +1,478 @@
+2023/08/17 11:26:47 14: client new append x 14 0 y
+2023/08/17 11:26:47 3: client new append x 3 0 y
+2023/08/17 11:26:47 6: client new append x 6 0 y
+2023/08/17 11:26:47 7: client new get 2
+2023/08/17 11:26:47 8: client new get 8
+2023/08/17 11:26:47 9: client new append x 9 0 y
+2023/08/17 11:26:47 2: client new append x 2 0 y
+2023/08/17 11:26:47 1: client new get 8
+2023/08/17 11:26:47 12: client new get 12
+2023/08/17 11:26:47 11: client new append x 11 0 y
+2023/08/17 11:26:47 4: client new append x 4 0 y
+2023/08/17 11:26:47 13: client new get 5
+2023/08/17 11:26:47 5: client new get 3
+2023/08/17 11:26:48 12: client new append x 12 0 y
+2023/08/17 11:26:48 10: client new append x 10 1 y
+2023/08/17 11:26:48 4: client new append x 4 1 y
+2023/08/17 11:26:48 3: client new get 12
+2023/08/17 11:26:48 14: client new get 8
+2023/08/17 11:26:48 0: client new get 4
+2023/08/17 11:26:48 9: client new append x 9 1 y
+2023/08/17 11:26:48 5: client new append x 5 0 y
+2023/08/17 11:26:48 2: client new get 0
+2023/08/17 11:26:48 10: client new get 3
+2023/08/17 11:26:48 14: client new get 5
+2023/08/17 11:26:48 4: client new append x 4 2 y
+2023/08/17 11:26:48 9: client new get 8
+2023/08/17 11:26:48 12: client new get 9
+2023/08/17 11:26:48 2: client new get 2
+2023/08/17 11:26:48 3: client new get 10
+2023/08/17 11:26:48 13: client new append x 13 0 y
+2023/08/17 11:26:48 8: client new get 13
+2023/08/17 11:26:48 0: client new append x 0 1 y
+2023/08/17 11:26:48 6: client new get 10
+2023/08/17 11:26:48 11: client new get 4
+2023/08/17 11:26:48 2: client new append x 2 1 y
+2023/08/17 11:26:48 13: client new append x 13 1 y
+2023/08/17 11:26:48 6: client new append x 6 2 y
+2023/08/17 11:26:48 3: client new get 2
+2023/08/17 11:26:48 10: client new get 4
+2023/08/17 11:26:48 9: client new append x 9 2 y
+2023/08/17 11:26:48 0: client new append x 0 2 y
+2023/08/17 11:26:48 4: client new get 6
+2023/08/17 11:26:48 14: client new append x 14 1 y
+2023/08/17 11:26:48 2: client new get 6
+2023/08/17 11:26:48 9: client new append x 9 3 y
+2023/08/17 11:26:48 1: client new get 13
+2023/08/17 11:26:48 7: client new append x 7 0 y
+2023/08/17 11:26:48 10: client new append x 10 2 y
+2023/08/17 11:26:48 14: client new get 3
+2023/08/17 11:26:48 11: client new append x 11 1 y
+2023/08/17 11:26:48 4: client new get 0
+2023/08/17 11:26:48 6: client new append x 6 3 y
+2023/08/17 11:26:48 5: client new get 13
+2023/08/17 11:26:48 1: client new append x 1 0 y
+2023/08/17 11:26:48 3: client new get 12
+2023/08/17 11:26:48 0: client new append x 0 4 y
+2023/08/17 11:26:48 5: client new get 7
+2023/08/17 11:26:48 4: client new get 7
+2023/08/17 11:26:48 6: client new get 7
+2023/08/17 11:26:48 10: client new get 12
+2023/08/17 11:26:48 8: client new append x 8 0 y
+2023/08/17 11:26:48 14: client new get 9
+2023/08/17 11:26:49 4: client new append x 4 3 y
+2023/08/17 11:26:49 0: client new append x 0 5 y
+2023/08/17 11:26:49 12: client new get 3
+2023/08/17 11:26:49 3: client new append x 3 2 y
+2023/08/17 11:26:49 10: client new append x 10 3 y
+2023/08/17 11:26:49 14: client new append x 14 2 y
+2023/08/17 11:26:49 7: client new get 8
+2023/08/17 11:26:49 13: client new get 0
+2023/08/17 11:26:49 8: client new append x 8 1 y
+2023/08/17 11:26:49 4: client new get 7
+2023/08/17 11:26:49 14: client new get 2
+2023/08/17 11:26:49 10: client new append x 10 4 y
+2023/08/17 11:26:49 13: client new get 1
+2023/08/17 11:26:49 12: client new append x 12 1 y
+2023/08/17 11:26:49 0: client new append x 0 6 y
+2023/08/17 11:26:49 7: client new append x 7 2 y
+2023/08/17 11:26:49 6: client new append x 6 4 y
+2023/08/17 11:26:49 8: client new append x 8 2 y
+2023/08/17 11:26:49 2: client new get 14
+2023/08/17 11:26:49 1: client new get 3
+2023/08/17 11:26:49 8: client new append x 8 3 y
+2023/08/17 11:26:49 12: client new append x 12 2 y
+2023/08/17 11:26:49 14: client new get 6
+2023/08/17 11:26:49 10: client new append x 10 5 y
+2023/08/17 11:26:49 4: client new append x 4 4 y
+2023/08/17 11:26:49 2: client new append x 2 2 y
+2023/08/17 11:26:49 6: client new append x 6 5 y
+2023/08/17 11:26:49 1: client new get 2
+2023/08/17 11:26:51 8: client new append x 8 4 y
+2023/08/17 11:26:51 9: client new append x 9 4 y
+2023/08/17 11:26:51 3: client new append x 3 3 y
+2023/08/17 11:26:51 11: client new get 8
+2023/08/17 11:26:51 2: client new get 8
+2023/08/17 11:26:51 6: client new get 12
+2023/08/17 11:26:51 10: client new append x 10 6 y
+2023/08/17 11:26:51 7: client new append x 7 3 y
+2023/08/17 11:26:51 4: client new append x 4 5 y
+2023/08/17 11:26:51 1: client new append x 1 1 y
+2023/08/17 11:26:51 5: client new append x 5 1 y
+2023/08/17 11:26:51 0: client new append x 0 7 y
+2023/08/17 11:26:51 4: client new get 14
+2023/08/17 11:26:51 7: client new append x 7 4 y
+2023/08/17 11:26:51 3: client new append x 3 4 y
+2023/08/17 11:26:51 1: client new append x 1 2 y
+2023/08/17 11:26:51 14: client new append x 14 3 y
+2023/08/17 11:26:51 6: client new append x 6 6 y
+2023/08/17 11:26:51 9: client new get 11
+2023/08/17 11:26:51 11: client new append x 11 2 y
+2023/08/17 11:26:51 10: client new append x 10 7 y
+2023/08/17 11:26:51 2: client new get 2
+2023/08/17 11:26:59 4: client new append x 4 0 y
+2023/08/17 11:26:59 14: client new append x 14 0 y
+2023/08/17 11:26:59 3: client new append x 3 0 y
+2023/08/17 11:26:59 5: client new get 3
+2023/08/17 11:26:59 6: client new get 4
+2023/08/17 11:26:59 7: client new append x 7 0 y
+2023/08/17 11:26:59 8: client new get 4
+2023/08/17 11:26:59 9: client new get 13
+2023/08/17 11:26:59 10: client new append x 10 0 y
+2023/08/17 11:26:59 11: client new get 9
+2023/08/17 11:26:59 13: client new get 5
+2023/08/17 11:26:59 0: client new append x 0 0 y
+2023/08/17 11:26:59 2: client new get 1
+2023/08/17 11:26:59 1: client new get 5
+2023/08/17 11:26:59 2: client new append x 2 0 y
+2023/08/17 11:26:59 1: client new append x 1 0 y
+2023/08/17 11:26:59 4: client new append x 4 1 y
+2023/08/17 11:26:59 7: client new get 9
+2023/08/17 11:26:59 3: client new append x 3 1 y
+2023/08/17 11:26:59 12: client new append x 12 1 y
+2023/08/17 11:26:59 11: client new get 5
+2023/08/17 11:26:59 0: client new get 3
+2023/08/17 11:26:59 4: client new append x 4 2 y
+2023/08/17 11:26:59 7: client new get 8
+2023/08/17 11:26:59 10: client new append x 10 1 y
+2023/08/17 11:26:59 3: client new get 10
+2023/08/17 11:26:59 5: client new get 9
+2023/08/17 11:26:59 1: client new get 1
+2023/08/17 11:26:59 6: client new get 3
+2023/08/17 11:26:59 14: client new append x 14 1 y
+2023/08/17 11:27:00 7: client new append x 7 1 y
+2023/08/17 11:27:00 14: client new append x 14 2 y
+2023/08/17 11:27:00 10: client new get 9
+2023/08/17 11:27:00 8: client new get 5
+2023/08/17 11:27:00 1: client new append x 1 1 y
+2023/08/17 11:27:00 3: client new get 12
+2023/08/17 11:27:00 13: client new append x 13 0 y
+2023/08/17 11:27:00 5: client new append x 5 0 y
+2023/08/17 11:27:00 6: client new append x 6 0 y
+2023/08/17 11:27:00 0: client new append x 0 1 y
+2023/08/17 11:27:00 2: client new append x 2 1 y
+2023/08/17 11:27:00 8: client new append x 8 0 y
+2023/08/17 11:27:00 0: client new append x 0 2 y
+2023/08/17 11:27:00 6: client new get 7
+2023/08/17 11:27:00 3: client new get 7
+2023/08/17 11:27:00 11: client new append x 11 0 y
+2023/08/17 11:27:00 10: client new append x 10 2 y
+2023/08/17 11:27:00 7: client new get 7
+2023/08/17 11:27:00 14: client new append x 14 3 y
+2023/08/17 11:27:00 13: client new append x 13 1 y
+2023/08/17 11:27:00 9: client new append x 9 0 y
+2023/08/17 11:27:00 0: client new get 6
+2023/08/17 11:27:00 11: client new append x 11 1 y
+2023/08/17 11:27:00 14: client new get 1
+2023/08/17 11:27:00 13: client new append x 13 2 y
+2023/08/17 11:27:00 8: client new get 11
+2023/08/17 11:27:00 6: client new append x 6 1 y
+2023/08/17 11:27:00 2: client new get 11
+2023/08/17 11:27:00 3: client new append x 3 2 y
+2023/08/17 11:27:00 1: client new get 6
+2023/08/17 11:27:00 0: client new append x 0 3 y
+2023/08/17 11:27:00 14: client new get 10
+2023/08/17 11:27:00 13: client new get 12
+2023/08/17 11:27:00 8: client new get 7
+2023/08/17 11:27:00 3: client new append x 3 3 y
+2023/08/17 11:27:00 6: client new get 14
+2023/08/17 11:27:00 11: client new append x 11 2 y
+2023/08/17 11:27:00 4: client new get 2
+2023/08/17 11:27:00 10: client new append x 10 4 y
+2023/08/17 11:27:00 10: client new get 13
+2023/08/17 11:27:00 0: client new get 13
+2023/08/17 11:27:00 4: client new append x 4 4 y
+2023/08/17 11:27:00 2: client new get 7
+2023/08/17 11:27:00 6: client new get 0
+2023/08/17 11:27:00 3: client new get 1
+2023/08/17 11:27:00 14: client new get 7
+2023/08/17 11:27:00 11: client new get 3
+2023/08/17 11:27:00 8: client new append x 8 1 y
+2023/08/17 11:27:00 1: client new get 13
+2023/08/17 11:27:00 12: client new append x 12 2 y
+2023/08/17 11:27:00 5: client new append x 5 2 y
+2023/08/17 11:27:00 0: client new get 5
+2023/08/17 11:27:00 14: client new get 0
+2023/08/17 11:27:00 8: client new append x 8 2 y
+2023/08/17 11:27:00 11: client new get 6
+2023/08/17 11:27:00 6: client new get 14
+2023/08/17 11:27:00 2: client new get 3
+2023/08/17 11:27:00 3: client new append x 3 4 y
+2023/08/17 11:27:00 9: client new append x 9 1 y
+2023/08/17 11:27:00 6: client new get 1
+2023/08/17 11:27:00 13: client new get 5
+2023/08/17 11:27:00 12: client new get 0
+2023/08/17 11:27:00 2: client new get 9
+2023/08/17 11:27:00 14: client new get 9
+2023/08/17 11:27:00 5: client new get 8
+2023/08/17 11:27:00 0: client new append x 0 4 y
+2023/08/17 11:27:00 11: client new append x 11 3 y
+2023/08/17 11:27:00 4: client new get 11
+2023/08/17 11:27:00 10: client new append x 10 5 y
+2023/08/17 11:27:00 3: client new get 9
+2023/08/17 11:27:00 6: client new get 10
+2023/08/17 11:27:00 8: client new get 6
+2023/08/17 11:27:00 14: client new get 11
+2023/08/17 11:27:00 5: client new append x 5 3 y
+2023/08/17 11:27:00 0: client new append x 0 5 y
+2023/08/17 11:27:00 2: client new append x 2 3 y
+2023/08/17 11:27:00 12: client new append x 12 3 y
+2023/08/17 11:27:00 7: client new get 14
+2023/08/17 11:27:00 1: client new append x 1 2 y
+2023/08/17 11:27:01 0: client new append x 0 6 y
+2023/08/17 11:27:01 14: client new append x 14 4 y
+2023/08/17 11:27:01 12: client new append x 12 4 y
+2023/08/17 11:27:01 1: client new append x 1 3 y
+2023/08/17 11:27:01 8: client new append x 8 4 y
+2023/08/17 11:27:01 2: client new append x 2 4 y
+2023/08/17 11:27:01 10: client new get 12
+2023/08/17 11:27:01 3: client new append x 3 6 y
+2023/08/17 11:27:01 5: client new get 11
+2023/08/17 11:27:01 13: client new get 9
+2023/08/17 11:27:01 11: client new append x 11 4 y
+2023/08/17 11:27:01 9: client new get 3
+2023/08/17 11:27:01 1: client new append x 1 4 y
+2023/08/17 11:27:01 12: client new append x 12 5 y
+2023/08/17 11:27:01 13: client new get 14
+2023/08/17 11:27:01 6: client new append x 6 3 y
+2023/08/17 11:27:01 3: client new get 0
+2023/08/17 11:27:01 8: client new get 7
+2023/08/17 11:27:01 2: client new get 6
+2023/08/17 11:27:01 4: client new get 2
+2023/08/17 11:27:01 10: client new get 4
+2023/08/17 11:27:01 11: client new append x 11 5 y
+2023/08/17 11:27:01 9: client new get 14
+2023/08/17 11:27:01 4: client new get 3
+2023/08/17 11:27:01 12: client new append x 12 6 y
+2023/08/17 11:27:01 11: client new append x 11 6 y
+2023/08/17 11:27:01 9: client new append x 9 2 y
+2023/08/17 11:27:01 2: client new append x 2 5 y
+2023/08/17 11:27:01 13: client new append x 13 3 y
+2023/08/17 11:27:01 7: client new append x 7 2 y
+2023/08/17 11:27:01 8: client new get 8
+2023/08/17 11:27:01 1: client new get 6
+2023/08/17 11:27:01 11: client new append x 11 7 y
+2023/08/17 11:27:01 7: client new append x 7 3 y
+2023/08/17 11:27:01 8: client new append x 8 5 y
+2023/08/17 11:27:01 9: client new append x 9 3 y
+2023/08/17 11:27:01 13: client new get 4
+2023/08/17 11:27:01 2: client new append x 2 6 y
+2023/08/17 11:27:01 14: client new get 2
+2023/08/17 11:27:01 4: client new append x 4 6 y
+2023/08/17 11:27:01 0: client new get 12
+2023/08/17 11:27:01 3: client new get 2
+2023/08/17 11:27:01 14: client new append x 14 5 y
+2023/08/17 11:27:01 13: client new append x 13 4 y
+2023/08/17 11:27:01 5: client new append x 5 4 y
+2023/08/17 11:27:01 4: client new get 9
+2023/08/17 11:27:01 12: client new append x 12 8 y
+2023/08/17 11:27:01 11: client new append x 11 8 y
+2023/08/17 11:27:01 0: client new append x 0 7 y
+2023/08/17 11:27:01 7: client new append x 7 4 y
+2023/08/17 11:27:01 8: client new get 7
+2023/08/17 11:27:01 1: client new append x 1 6 y
+2023/08/17 11:27:03 5: client new get 2
+2023/08/17 11:27:03 2: client new append x 2 8 y
+2023/08/17 11:27:03 7: client new append x 7 5 y
+2023/08/17 11:27:03 11: client new get 9
+2023/08/17 11:27:03 14: client new get 9
+2023/08/17 11:27:03 10: client new append x 10 6 y
+2023/08/17 11:27:03 4: client new append x 4 7 y
+2023/08/17 11:27:03 8: client new append x 8 6 y
+2023/08/17 11:27:03 3: client new append x 3 7 y
+2023/08/17 11:27:03 0: client new append x 0 8 y
+2023/08/17 11:27:03 9: client new get 1
+2023/08/17 11:27:03 1: client new append x 1 7 y
+2023/08/17 11:27:03 6: client new append x 6 4 y
+2023/08/17 11:27:04 11: client new get 11
+2023/08/17 11:27:04 2: client new get 4
+2023/08/17 11:27:04 3: client new get 4
+2023/08/17 11:27:04 10: client new append x 10 7 y
+2023/08/17 11:27:04 5: client new get 0
+2023/08/17 11:27:04 1: client new append x 1 8 y
+2023/08/17 11:27:04 7: client new append x 7 6 y
+2023/08/17 11:27:04 4: client new append x 4 8 y
+2023/08/17 11:27:04 6: client new get 11
+2023/08/17 11:27:04 14: client new get 1
+2023/08/17 11:27:04 9: client new append x 9 4 y
+2023/08/17 11:27:05 14: client new get 4
+2023/08/17 11:27:05 1: client new get 6
+2023/08/17 11:27:05 8: client new append x 8 7 y
+2023/08/17 11:27:05 5: client new get 7
+2023/08/17 11:27:05 4: client new get 0
+2023/08/17 11:27:05 10: client new append x 10 8 y
+2023/08/17 11:27:05 2: client new append x 2 9 y
+2023/08/17 11:27:05 12: client new append x 12 9 y
+2023/08/17 11:27:05 4: client new get 11
+2023/08/17 11:27:05 5: client new append x 5 5 y
+2023/08/17 11:27:05 14: client new get 3
+2023/08/17 11:27:05 1: client new get 7
+2023/08/17 11:27:05 11: client new append x 11 10 y
+2023/08/17 11:27:05 2: client new get 5
+2023/08/17 11:27:05 0: client new append x 0 9 y
+2023/08/17 11:27:05 10: client new append x 10 9 y
+2023/08/17 11:27:05 12: client new append x 12 10 y
+2023/08/17 11:27:05 3: client new get 5
+2023/08/17 11:27:05 6: client new get 6
+2023/08/17 11:27:14 14: client new append x 14 0 y
+2023/08/17 11:27:14 6: client new append x 6 0 y
+2023/08/17 11:27:14 9: client new append x 9 0 y
+2023/08/17 11:27:14 3: client new append x 3 0 y
+2023/08/17 11:27:14 5: client new get 9
+2023/08/17 11:27:14 10: client new append x 10 0 y
+2023/08/17 11:27:14 7: client new append x 7 0 y
+2023/08/17 11:27:14 8: client new get 9
+2023/08/17 11:27:14 11: client new get 1
+2023/08/17 11:27:14 12: client new get 12
+2023/08/17 11:27:14 13: client new append x 13 0 y
+2023/08/17 11:27:14 2: client new get 7
+2023/08/17 11:27:14 0: client new get 1
+2023/08/17 11:27:14 1: client new append x 1 0 y
+2023/08/17 11:27:14 4: client new get 5
+2023/08/17 11:27:14 4: client new get 9
+2023/08/17 11:27:14 5: client new append x 5 0 y
+2023/08/17 11:27:14 0: client new get 5
+2023/08/17 11:27:14 8: client new get 5
+2023/08/17 11:27:14 9: client new append x 9 1 y
+2023/08/17 11:27:14 7: client new append x 7 1 y
+2023/08/17 11:27:14 11: client new append x 11 0 y
+2023/08/17 11:27:14 8: client new append x 8 0 y
+2023/08/17 11:27:14 7: client new append x 7 2 y
+2023/08/17 11:27:14 5: client new append x 5 1 y
+2023/08/17 11:27:14 9: client new append x 9 2 y
+2023/08/17 11:27:14 0: client new append x 0 0 y
+2023/08/17 11:27:14 3: client new append x 3 1 y
+2023/08/17 11:27:14 2: client new get 12
+2023/08/17 11:27:14 6: client new append x 6 1 y
+2023/08/17 11:27:14 1: client new append x 1 1 y
+2023/08/17 11:27:14 13: client new get 12
+2023/08/17 11:27:14 14: client new get 11
+2023/08/17 11:27:14 2: client new get 9
+2023/08/17 11:27:14 8: client new append x 8 1 y
+2023/08/17 11:27:14 5: client new append x 5 2 y
+2023/08/17 11:27:14 1: client new get 5
+2023/08/17 11:27:14 14: client new append x 14 1 y
+2023/08/17 11:27:14 4: client new append x 4 1 y
+2023/08/17 11:27:14 0: client new append x 0 1 y
+2023/08/17 11:27:14 7: client new append x 7 3 y
+2023/08/17 11:27:14 11: client new get 4
+2023/08/17 11:27:14 10: client new append x 10 1 y
+2023/08/17 11:27:14 3: client new append x 3 2 y
+2023/08/17 11:27:14 13: client new get 3
+2023/08/17 11:27:15 7: client new append x 7 4 y
+2023/08/17 11:27:15 10: client new get 0
+2023/08/17 11:27:15 0: client new append x 0 2 y
+2023/08/17 11:27:15 3: client new get 6
+2023/08/17 11:27:15 14: client new append x 14 2 y
+2023/08/17 11:27:15 13: client new get 2
+2023/08/17 11:27:15 5: client new get 2
+2023/08/17 11:27:15 8: client new get 0
+2023/08/17 11:27:15 11: client new get 0
+2023/08/17 11:27:15 4: client new append x 4 2 y
+2023/08/17 11:27:15 1: client new get 3
+2023/08/17 11:27:15 14: client new get 2
+2023/08/17 11:27:15 5: client new get 1
+2023/08/17 11:27:15 8: client new get 6
+2023/08/17 11:27:15 13: client new append x 13 1 y
+2023/08/17 11:27:15 2: client new get 2
+2023/08/17 11:27:15 0: client new get 12
+2023/08/17 11:27:15 4: client new append x 4 3 y
+2023/08/17 11:27:15 9: client new append x 9 3 y
+2023/08/17 11:27:15 11: client new append x 11 1 y
+2023/08/17 11:27:15 1: client new get 13
+2023/08/17 11:27:15 10: client new get 11
+2023/08/17 11:27:15 3: client new get 0
+2023/08/17 11:27:15 4: client new append x 4 4 y
+2023/08/17 11:27:15 6: client new append x 6 2 y
+2023/08/17 11:27:15 2: client new get 0
+2023/08/17 11:27:15 10: client new append x 10 2 y
+2023/08/17 11:27:15 9: client new append x 9 4 y
+2023/08/17 11:27:15 3: client new get 2
+2023/08/17 11:27:15 8: client new append x 8 2 y
+2023/08/17 11:27:15 5: client new append x 5 3 y
+2023/08/17 11:27:15 1: client new append x 1 2 y
+2023/08/17 11:27:15 0: client new append x 0 3 y
+2023/08/17 11:27:15 12: client new append x 12 0 y
+2023/08/17 11:27:15 6: client new get 12
+2023/08/17 11:27:15 2: client new append x 2 1 y
+2023/08/17 11:27:15 1: client new append x 1 3 y
+2023/08/17 11:27:15 8: client new append x 8 3 y
+2023/08/17 11:27:15 9: client new append x 9 5 y
+2023/08/17 11:27:15 4: client new append x 4 5 y
+2023/08/17 11:27:15 0: client new append x 0 4 y
+2023/08/17 11:27:15 3: client new append x 3 3 y
+2023/08/17 11:27:15 8: client new append x 8 4 y
+2023/08/17 11:27:15 7: client new get 6
+2023/08/17 11:27:15 10: client new get 4
+2023/08/17 11:27:15 11: client new append x 11 2 y
+2023/08/17 11:27:15 4: client new get 1
+2023/08/17 11:27:15 2: client new append x 2 2 y
+2023/08/17 11:27:15 9: client new get 3
+2023/08/17 11:27:15 3: client new get 14
+2023/08/17 11:27:15 13: client new get 5
+2023/08/17 11:27:15 12: client new get 6
+2023/08/17 11:27:15 6: client new append x 6 3 y
+2023/08/17 11:27:15 2: client new get 2
+2023/08/17 11:27:15 5: client new append x 5 4 y
+2023/08/17 11:27:15 4: client new append x 4 6 y
+2023/08/17 11:27:15 11: client new get 11
+2023/08/17 11:27:15 13: client new get 5
+2023/08/17 11:27:15 8: client new get 13
+2023/08/17 11:27:15 10: client new append x 10 4 y
+2023/08/17 11:27:15 12: client new get 9
+2023/08/17 11:27:15 9: client new append x 9 6 y
+2023/08/17 11:27:15 7: client new append x 7 5 y
+2023/08/17 11:27:15 3: client new get 4
+2023/08/17 11:27:15 0: client new append x 0 6 y
+2023/08/17 11:27:15 5: client new get 1
+2023/08/17 11:27:15 1: client new append x 1 5 y
+2023/08/17 11:27:15 0: client new append x 0 7 y
+2023/08/17 11:27:15 8: client new append x 8 5 y
+2023/08/17 11:27:15 13: client new append x 13 2 y
+2023/08/17 11:27:15 3: client new get 10
+2023/08/17 11:27:15 9: client new append x 9 7 y
+2023/08/17 11:27:15 4: client new get 3
+2023/08/17 11:27:15 10: client new get 11
+2023/08/17 11:27:15 2: client new get 10
+2023/08/17 11:27:15 14: client new get 6
+2023/08/17 11:27:16 14: client new get 3
+2023/08/17 11:27:16 10: client new get 0
+2023/08/17 11:27:16 3: client new append x 3 4 y
+2023/08/17 11:27:16 0: client new get 10
+2023/08/17 11:27:16 9: client new append x 9 8 y
+2023/08/17 11:27:16 6: client new append x 6 4 y
+2023/08/17 11:27:17 6: client new get 11
+2023/08/17 11:27:17 9: client new get 5
+2023/08/17 11:27:17 10: client new get 9
+2023/08/17 11:27:17 12: client new get 9
+2023/08/17 11:27:17 7: client new append x 7 6 y
+2023/08/17 11:27:19 11: client new append x 11 3 y
+2023/08/17 11:27:19 14: client new get 13
+2023/08/17 11:27:19 8: client new append x 8 6 y
+2023/08/17 11:27:19 0: client new append x 0 8 y
+2023/08/17 11:27:19 2: client new get 4
+2023/08/17 11:27:19 4: client new get 13
+2023/08/17 11:27:19 5: client new get 3
+2023/08/17 11:27:19 7: client new append x 7 7 y
+2023/08/17 11:27:19 12: client new get 14
+2023/08/17 11:27:19 2: client new append x 2 3 y
+2023/08/17 11:27:19 0: client new append x 0 9 y
+2023/08/17 11:27:19 9: client new append x 9 10 y
+2023/08/17 11:27:19 4: client new get 10
+2023/08/17 11:27:19 5: client new get 0
+2023/08/17 11:27:19 8: client new get 11
+2023/08/17 11:27:19 10: client new get 1
+2023/08/17 11:27:19 11: client new append x 11 4 y
+2023/08/17 11:27:19 13: client new get 13
+2023/08/17 11:27:19 3: client new append x 3 5 y
+2023/08/17 11:27:19 6: client new append x 6 5 y
+2023/08/17 11:27:19 7: client new append x 7 8 y
+2023/08/17 11:27:19 6: client new append x 6 6 y
+2023/08/17 11:27:19 10: client new get 1
+2023/08/17 11:27:19 4: client new get 12
+2023/08/17 11:27:19 9: client new get 4
+2023/08/17 11:27:19 11: client new get 0
+2023/08/17 11:27:19 5: client new append x 5 5 y
+2023/08/17 11:27:19 0: client new append x 0 10 y
+2023/08/17 11:27:19 2: client new append x 2 4 y
+2023/08/17 11:27:19 13: client new get 5

@@ -99,4 +99,12 @@ multiple test
 
 ## lab3: KV Raft
 
+### lab3A Key/value service without snapshots
+
+single test
+
+<img src="./image/image12.jpg" width="300px" />
+
+### Key/value service with snapshots
+
 ## lab4: Sharded KV

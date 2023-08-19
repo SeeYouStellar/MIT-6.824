@@ -1,0 +1,27 @@
+=== RUN   TestPersistPartitionUnreliableLinearizable3A
+Test: unreliable net, restarts, partitions, random keys, many clients (3A) ...
+labgob warning: Decoding into a non-default variable/field Err may not work
+term 2 server 4 become leader
+term 8 server 4 become leader
+term 16 server 2 become leader
+term 18 server 1 become leader
+term 20 server 1 become leader
+term 21 server 2 become leader
+term 23 server 2 become leader
+term 25 server 2 become leader
+term 27 server 2 become leader
+term 35 server 2 become leader
+term 40 server 0 become leader
+term 43 server 0 become leader
+term 45 server 6 become leader
+term 47 server 6 become leader
+term 49 server 6 become leader
+term 51 server 1 become leader
+term 57 server 5 become leader
+term 64 server 5 become leader
+term 66 server 3 become leader
+term 68 server 3 become leader
+term 69 server 6 become leader
+  ... Passed --  37.3  7  6912  550
+--- PASS: TestPersistPartitionUnreliableLinearizable3A (37.25s)
+PASS

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"math/big"
 	"sync"
+	"time"
 
 	"6.824/labrpc"
 )
@@ -11,10 +12,10 @@ import (
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
-	lastLeader   int
-	clerkId      int
-	lastCmdIndex int
-	mu           sync.Mutex
+	lastLeader int
+	clerkId    int
+	lastSeq    int
+	mu         sync.Mutex
 }
 
 func nrand() int64 {
@@ -29,7 +30,8 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck.servers = servers
 	// You'll have to add code here.
 	ck.clerkId = int(nrand())
-	ck.lastCmdIndex = 0
+	ck.lastSeq = 0
+	ck.lastLeader = 0
 	return ck
 }
 
@@ -49,19 +51,24 @@ func (ck *Clerk) Get(key string) string {
 	args := GetArgs{
 		Key:     key,
 		ClerkId: ck.clerkId,
-		Index:   ck.lastCmdIndex,
+		Seq:     ck.lastSeq,
 	}
 	reply := GetReply{}
 
 	i := ck.lastLeader
 	defer func() {
+		ck.mu.Lock()
 		ck.lastLeader = i
+		ck.mu.Unlock()
 	}()
 
 	for {
 		ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
+		// fmt.Printf("clerk %d call cmd to server层 %d\n", ck.clerkId, i)
+		// fmt.Println(args)
 		if !ok || reply.Err == ErrWrongLeader {
 			i = (i + 1) % len(ck.servers)
+			time.Sleep(10 * time.Millisecond)
 			continue
 		}
 		if reply.Err == ErrNoKey {
@@ -82,27 +89,32 @@ func (ck *Clerk) Get(key string) string {
 func (ck *Clerk) PutAppend(key string, value string, op string) {
 	// You will have to modify this function.
 	ck.mu.Lock()
-	ck.lastCmdIndex += 1
+	ck.lastSeq += 1
 	ck.mu.Unlock()
 
 	args := PutAppendArgs{
 		Key:     key,
 		Value:   value,
-		Op:      op,
+		OpPA:    op,
 		ClerkId: ck.clerkId,
-		Index:   ck.lastCmdIndex + 1,
+		Seq:     ck.lastSeq,
 	}
 	reply := PutAppendReply{}
 
 	i := ck.lastLeader
 	defer func() {
+		ck.mu.Lock()
 		ck.lastLeader = i
+		ck.mu.Unlock()
 	}()
 
 	for {
+		// fmt.Printf("clerk %d send cmd to server层 %d\n", ck.clerkId, i)
+		// fmt.Println(args)
 		ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
 		if !ok || reply.Err == ErrWrongLeader {
 			i = (i + 1) % len(ck.servers)
+			time.Sleep(10 * time.Millisecond)
 			continue
 		}
 		return

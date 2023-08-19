@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"6.824/labgob"
 	"6.824/labrpc"
@@ -19,15 +20,16 @@ func DPrintf(format string, a ...interface{}) (n int, err error) {
 	return
 }
 
+// Op是请求数据结构，OpPA代表该请求操作类型
 type Op struct {
 	// Your definitions here.
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
-	Cmd     string
+	OpPA    string
 	Key     string
 	Val     string
 	ClerkId int
-	Index   int
+	Seq     int
 }
 
 type KVServer struct {
@@ -40,35 +42,129 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
-	kvdb        map[string]string
-	maxCmdIndex map[int]int
+	kvdb     map[string]string
+	lastSeq  map[int]int     // 记录每个clerk已经提交的日志的序列号（op中的序列号，与日志下标不一样）
+	agreeChs map[int]chan Op // 每个日志下标对应的通知rpc结束的管道
 }
 
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	// Your code here.
-	cmd := Op{Cmd: "Get", Key: args.Key}
-	_, _, isLeader := kv.rf.Start(cmd)
+	cmd := Op{
+		OpPA:    "Get",
+		Key:     args.Key,
+		ClerkId: args.ClerkId,
+		Seq:     args.Seq,
+	}
+
+	index, _, isLeader := kv.rf.Start(cmd)
 	if !isLeader {
 		reply.Err = ErrWrongLeader
 		return
 	}
-	<-kv.applyCh
-
+	ch := kv.getAgreeCh(index)
+	var cmd_ Op
+	select {
+	case cmd_ = <-ch:
+		close(ch)
+	case <-time.After(1000 * time.Millisecond): // 超时重试
+		reply.Err = ErrWrongLeader
+		return
+	}
+	if !isSameOp(cmd_, cmd) {
+		reply.Err = ErrWrongLeader
+		return
+	}
+	reply.Value = kv.kvdb[args.Key]
+	reply.Err = OK
+	return
 }
 
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	// Your code here.
-	cmd := Op{Cmd: args.Op, Key: args.Key}
-	_, _, isLeader := kv.rf.Start(cmd)
+	cmd := Op{
+		OpPA:    args.OpPA,
+		Key:     args.Key,
+		Val:     args.Value,
+		ClerkId: args.ClerkId,
+		Seq:     args.Seq,
+	}
+	index, _, isLeader := kv.rf.Start(cmd)
+	// fmt.Printf("server层 %d send cmd to raft层\n", kv.me)
+	// fmt.Println(cmd)
 	if !isLeader {
 		reply.Err = ErrWrongLeader
+		// fmt.Printf("server层 %d, 不是leader，返回clerk ErrWrongLeader\n", kv.me)
 		return
 	}
-	<-kv.applyCh
-	kv.kvdb[args.Key] = args.Value
+	ch := kv.getAgreeCh(index)
+	var cmd_ Op
+	select {
+	case cmd_ = <-ch:
+		close(ch)
+	case <-time.After(1000 * time.Millisecond): // 超时重试
+		reply.Err = ErrWrongLeader
+		// fmt.Printf("server层 %d, cmd 超时未同步，返回clerk ErrWrongLeader\n", kv.me)
+		// fmt.Println(cmd)
+		return
+	}
+	// 网络分区修复前，某个term更小的leader正好start(cmd)，然后cmd还未被同步完成即还未提交，
+	// 网络分区修复后，新的cmd覆盖了这个index上原有的cmd，然后通过applych传回了该cmd，
+	// 此时该rpc handler发起时的需同步的cmd与applych传回的不是同一个cmd，之前的需同步的cmd实际未同步，所以需要告知clerk重试
+	if !isSameOp(cmd_, cmd) { // 所以需要判断cmd_与cmd是否相同
+		reply.Err = ErrWrongLeader
+		// fmt.Printf("server层 %d, raft返回的日志与server层下发的日志不同，返回clerk ErrWrongLeader\n", kv.me)
+		// fmt.Println(cmd)
+		return
+	}
+	// fmt.Printf("server层 %d, cmd 已应用到状态机\n", kv.me)
+	// fmt.Println(cmd)
+	reply.Err = OK
+	return
 }
-func (kv *KVServer) AgreeLog() {
+func isSameOp(a, b Op) bool {
+	return a.ClerkId == b.ClerkId && a.Seq == b.Seq && a.OpPA == b.OpPA && a.Key == b.Key && a.Val == b.Val
+}
+func (kv *KVServer) WaitAgree() {
+	for !kv.killed() {
+		select {
+		case msg := <-kv.applyCh:
+			// fmt.Printf("server层%d 接收到 raft层传来的msg\n", kv.me)
+			// fmt.Println(msg)
+			cmd := msg.Command.(Op)
+			kv.mu.Lock()
+			lastSeq, ok := kv.lastSeq[cmd.ClerkId]
+			if !ok || lastSeq < cmd.Seq {
+				// 应用到状态机中
+				kv.ApplyToStateMachine(cmd)
+				kv.lastSeq[cmd.ClerkId] = cmd.Seq
+			}
+			kv.mu.Unlock()
+			kv.getAgreeCh(msg.CommandIndex) <- cmd
+			// fmt.Printf("server层%d 已对raft传回来的消息做出重复判断,返回rpc handler\n", kv.me)
+		}
+	}
+}
+func (kv *KVServer) getAgreeCh(idx int) chan Op {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
 
+	ch, ok := kv.agreeChs[idx]
+	if !ok {
+		ch = make(chan Op, 1)
+		kv.agreeChs[idx] = ch
+	}
+	return ch
+}
+func (kv *KVServer) ApplyToStateMachine(cmd Op) {
+	op := cmd.OpPA // 命令操作类型
+	switch op {
+	case "Put":
+		kv.kvdb[cmd.Key] = cmd.Val
+	case "Append":
+		kv.kvdb[cmd.Key] += cmd.Val
+	}
+	// fmt.Printf("cmd ")
+	// fmt.Println(cmd, "apply")
 }
 
 // the tester calls Kill() when a KVServer instance won't
@@ -115,8 +211,11 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 
 	kv.applyCh = make(chan raft.ApplyMsg)
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
+	kv.kvdb = make(map[string]string, 0)
+	kv.agreeChs = make(map[int]chan Op, 0)
+	kv.lastSeq = make(map[int]int, 0)
 
 	// You may need initialization code here.
-
+	go kv.WaitAgree()
 	return kv
 }
