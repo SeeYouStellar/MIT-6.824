@@ -1,6 +1,8 @@
 package kvraft
 
 import (
+	"bytes"
+	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -42,9 +44,10 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
-	kvdb     map[string]string
-	lastSeq  map[int]int     // 记录每个clerk已经提交的日志的序列号（op中的序列号，与日志下标不一样）
-	agreeChs map[int]chan Op // 每个日志下标对应的通知rpc结束的管道
+	kvdb        map[string]string
+	lastSeqs    map[int]int     // 记录每个clerk已经提交的日志的序列号（op中的序列号，与日志下标不一样）
+	agreeChs    map[int]chan Op // 每个日志下标对应的通知rpc结束的管道
+	lastApplied int
 }
 
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
@@ -130,17 +133,25 @@ func (kv *KVServer) WaitAgree() {
 		case msg := <-kv.applyCh:
 			// fmt.Printf("server层%d 接收到 raft层传来的msg\n", kv.me)
 			// fmt.Println(msg)
-			cmd := msg.Command.(Op)
-			kv.mu.Lock()
-			lastSeq, ok := kv.lastSeq[cmd.ClerkId]
-			if !ok || lastSeq < cmd.Seq {
-				// 应用到状态机中
-				kv.ApplyToStateMachine(cmd)
-				kv.lastSeq[cmd.ClerkId] = cmd.Seq
+			if msg.SnapshotValid {
+				if kv.rf.CondInstallSnapshot(msg.SnapshotTerm, msg.SnapshotIndex, msg.Snapshot) {
+					kv.readSnapshot(msg.Snapshot)
+					kv.lastApplied = msg.SnapshotIndex
+				}
+			} else if msg.CommandValid {
+				cmd := msg.Command.(Op)
+				kv.mu.Lock()
+				lastSeqs, ok := kv.lastSeqs[cmd.ClerkId]
+				kv.lastApplied = msg.CommandIndex
+				if !ok || lastSeqs < cmd.Seq {
+					// 应用到状态机中
+					kv.applyToStateMachine(cmd)
+					kv.lastSeqs[cmd.ClerkId] = cmd.Seq
+				}
+				kv.mu.Unlock()
+				kv.getAgreeCh(msg.CommandIndex) <- cmd
+				// fmt.Printf("server层%d 已对raft传回来的消息做出重复判断,返回rpc handler\n", kv.me)
 			}
-			kv.mu.Unlock()
-			kv.getAgreeCh(msg.CommandIndex) <- cmd
-			// fmt.Printf("server层%d 已对raft传回来的消息做出重复判断,返回rpc handler\n", kv.me)
 		}
 	}
 }
@@ -155,7 +166,7 @@ func (kv *KVServer) getAgreeCh(idx int) chan Op {
 	}
 	return ch
 }
-func (kv *KVServer) ApplyToStateMachine(cmd Op) {
+func (kv *KVServer) applyToStateMachine(cmd Op) {
 	op := cmd.OpPA // 命令操作类型
 	switch op {
 	case "Put":
@@ -165,6 +176,42 @@ func (kv *KVServer) ApplyToStateMachine(cmd Op) {
 	}
 	// fmt.Printf("cmd ")
 	// fmt.Println(cmd, "apply")
+}
+
+// 生成server层的状态快照
+func (kv *KVServer) buildSnapshot() []byte {
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(kv.kvdb)
+	e.Encode(kv.lastSeqs)
+	data := w.Bytes()
+	return data
+}
+func (kv *KVServer) readSnapshot(data []byte) {
+	if data == nil || len(data) < 1 { // bootstrap without any state?
+		return
+	}
+	r := bytes.NewBuffer(data)
+	d := labgob.NewDecoder(r)
+	var kvdb map[string]string
+	var lastSeqs map[int]int
+	if d.Decode(&kvdb) != nil || d.Decode(&lastSeqs) != nil {
+		fmt.Printf("获取persist信息失败\n")
+	} else {
+		kv.kvdb = kvdb
+		kv.lastSeqs = lastSeqs
+	}
+}
+func (kv *KVServer) applySnapshot(persister *raft.Persister) {
+	for !kv.killed() {
+		kv.mu.Lock()
+		if kv.maxraftstate <= persister.RaftStateSize() {
+			index := kv.lastApplied
+			snapshot := kv.buildSnapshot()
+			kv.rf.Snapshot(index, snapshot)
+		}
+		kv.mu.Unlock()
+	}
 }
 
 // the tester calls Kill() when a KVServer instance won't
@@ -213,7 +260,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
 	kv.kvdb = make(map[string]string, 0)
 	kv.agreeChs = make(map[int]chan Op, 0)
-	kv.lastSeq = make(map[int]int, 0)
+	kv.lastSeqs = make(map[int]int, 0)
 
 	// You may need initialization code here.
 	go kv.WaitAgree()
